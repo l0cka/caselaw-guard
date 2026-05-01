@@ -58,4 +58,6 @@ def _result_from_lookup(citation: CitationMatch, *, provider: str | None, lookup
         status=lookup.status,
         confidence=lookup.confidence,
         error_message=lookup.error_message,
+        candidates=lookup.candidates,
+        provider_metadata=lookup.provider_metadata,
     )

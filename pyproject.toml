@@ -32,6 +32,7 @@ caselaw-guard = "caselaw_guard.cli:app"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 markers = [
   "integration: live provider integration tests"
 ]

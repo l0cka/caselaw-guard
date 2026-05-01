@@ -68,6 +68,33 @@ Create the GitHub release from tag `v0.1.0` using the `0.1.0` changelog entries.
 
 ## PyPI Publishing
 
-Publishing is intentionally manual until the first release path is proven. Prefer PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, `id-token: write`, and `pypa/gh-action-pypi-publish@release/v1`.
+Publishing is intentionally manual until the first release path is proven. Use PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, `id-token: write`, and `pypa/gh-action-pypi-publish@release/v1`.
 
-Do not publish from an unclean checkout or with failing local validation.
+Before the first publish, create a pending trusted publisher in PyPI:
+
+| Field | Value |
+| --- | --- |
+| PyPI project name | `caselaw-guard` |
+| Owner | `l0cka` |
+| Repository name | `caselaw-guard` |
+| Workflow name | `publish.yml` |
+| Environment name | `pypi` |
+
+After the pending publisher exists, run the manual GitHub Actions workflow:
+
+```bash
+gh workflow run publish.yml -f ref=v0.1.0
+gh run watch
+```
+
+Verify the package is available from PyPI:
+
+```bash
+python3 -m pip index versions caselaw-guard
+python3 -m venv /tmp/caselaw-guard-pypi
+/tmp/caselaw-guard-pypi/bin/python -m pip install --upgrade pip
+/tmp/caselaw-guard-pypi/bin/python -m pip install "caselaw-guard[mcp]"
+/tmp/caselaw-guard-pypi/bin/caselaw-guard --help
+```
+
+Do not publish from a ref that has not passed local validation.

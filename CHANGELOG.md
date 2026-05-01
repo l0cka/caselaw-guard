@@ -4,6 +4,8 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+## 0.1.2
+
 - Simplified README install and quickstart guidance.
 
 ## 0.1.1

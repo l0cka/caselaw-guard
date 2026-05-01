@@ -31,7 +31,8 @@ jobs:
       - name: Check package metadata
         run: python -m twine check dist/*
 
-      - name: Smoke test built wheel
+      - name: Locate built wheel
+        id: wheel
         run: |
           WHEEL=$(python - <<'PY'
           from pathlib import Path
@@ -39,9 +40,27 @@ jobs:
           print(next(Path("dist").glob("caselaw_guard-*.whl")))
           PY
           )
+          echo "path=${WHEEL}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test base wheel
+        run: |
+          python -m venv /tmp/caselaw-guard-base
+          /tmp/caselaw-guard-base/bin/python -m pip install --upgrade pip
+          /tmp/caselaw-guard-base/bin/python -m pip install "${{ steps.wheel.outputs.path }}"
+          /tmp/caselaw-guard-base/bin/caselaw-guard --help
+          /tmp/caselaw-guard-base/bin/python - <<'PY'
+          from caselaw_guard.verifier import verify_text
+
+          report = verify_text("No citations here.")
+          assert report.pass_ is True
+          assert report.results == []
+          PY
+
+      - name: Smoke test MCP extra
+        run: |
           python -m venv /tmp/caselaw-guard-wheel
           /tmp/caselaw-guard-wheel/bin/python -m pip install --upgrade pip
-          /tmp/caselaw-guard-wheel/bin/python -m pip install "${WHEEL}[mcp]"
+          /tmp/caselaw-guard-wheel/bin/python -m pip install "${{ steps.wheel.outputs.path }}[mcp]"
           /tmp/caselaw-guard-wheel/bin/caselaw-guard --help
           /tmp/caselaw-guard-wheel/bin/python - <<'PY'
           import sys

@@ -26,9 +26,13 @@ dependencies = [
 dev = [
   "pytest>=8.0"
 ]
+mcp = [
+  "mcp>=1,<2"
+]
 
 [project.scripts]
 caselaw-guard = "caselaw_guard.cli:app"
+caselaw-guard-mcp = "caselaw_guard.mcp_server:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

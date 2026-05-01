@@ -4,6 +4,7 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+- Added a manual v0.1 release checklist and expanded wheel smoke validation.
 - Added optional Australian index verification metrics to the AusLaw benchmark harness.
 - Improved Australian neutral citation extraction coverage for NSW tribunal and court codes surfaced by the AusLaw benchmark.
 - Added a manual AusLaw Citation Benchmark extraction eval harness.

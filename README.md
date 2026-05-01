@@ -114,37 +114,81 @@ Response shape:
 
 ## MCP Server
 
-Install the optional MCP extra when using CaseLaw Guard from local agents:
+Install the optional MCP extra when using CaseLaw Guard from local agents. From a local checkout:
 
 ```bash
 python3 -m pip install -e ".[mcp]"
 ```
 
-Run the local stdio MCP server:
+Run the local stdio MCP server directly to confirm it starts:
 
 ```bash
 caselaw-guard-mcp
 ```
 
-Example agent configuration:
+The server exposes one tool, `verify_case_law_text`, which accepts `text` and returns the same JSON report shape as the CLI and REST API.
+
+For agent configuration, prefer an absolute path to the installed script so the agent does not depend on shell startup files or `PATH` inheritance. In a local checkout, that path is typically:
+
+```text
+/path/to/caselaw-guard/.venv/bin/caselaw-guard-mcp
+```
+
+### Codex
+
+Add the server to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.caselaw-guard]
+command = "/path/to/caselaw-guard/.venv/bin/caselaw-guard-mcp"
+
+[mcp_servers.caselaw-guard.env]
+CASELAW_GUARD_COURTLISTENER_TOKEN = "your-courtlistener-token"
+CASELAW_GUARD_AU_INDEX = "/absolute/path/to/australia-index.json"
+CASELAW_GUARD_CACHE = "/absolute/path/to/courtlistener-cache.json"
+CASELAW_GUARD_CACHE_TTL_DAYS = "30"
+```
+
+### Claude Code
+
+Register the same stdio server with `claude mcp add-json`:
 
 ```json
 {
-  "mcpServers": {
-    "caselaw-guard": {
-      "command": "caselaw-guard-mcp",
-      "env": {
-        "CASELAW_GUARD_COURTLISTENER_TOKEN": "your-courtlistener-token",
-        "CASELAW_GUARD_AU_INDEX": "/absolute/path/to/australia-index.json",
-        "CASELAW_GUARD_CACHE": "/absolute/path/to/courtlistener-cache.json",
-        "CASELAW_GUARD_CACHE_TTL_DAYS": "30"
-      }
-    }
+  "type": "stdio",
+  "command": "/path/to/caselaw-guard/.venv/bin/caselaw-guard-mcp",
+  "env": {
+    "CASELAW_GUARD_COURTLISTENER_TOKEN": "your-courtlistener-token",
+    "CASELAW_GUARD_AU_INDEX": "/absolute/path/to/australia-index.json",
+    "CASELAW_GUARD_CACHE": "/absolute/path/to/courtlistener-cache.json",
+    "CASELAW_GUARD_CACHE_TTL_DAYS": "30"
   }
 }
 ```
 
-The server exposes one tool, `verify_case_law_text`, which accepts `text` and returns the same JSON report shape as the CLI and REST API. Omit provider environment variables for adapters you do not want to enable.
+```bash
+claude mcp add-json caselaw-guard '{"type":"stdio","command":"/path/to/caselaw-guard/.venv/bin/caselaw-guard-mcp","env":{"CASELAW_GUARD_COURTLISTENER_TOKEN":"your-courtlistener-token","CASELAW_GUARD_AU_INDEX":"/absolute/path/to/australia-index.json","CASELAW_GUARD_CACHE":"/absolute/path/to/courtlistener-cache.json","CASELAW_GUARD_CACHE_TTL_DAYS":"30"}}'
+```
+
+### MCP Environment
+
+Set only the provider environment variables you need:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `CASELAW_GUARD_COURTLISTENER_TOKEN` | Required for U.S. citation lookup | Enables the CourtListener adapter. |
+| `CASELAW_GUARD_AU_INDEX` | Required for Australian citation lookup | Points to a compact Australian citation index JSON file. |
+| `CASELAW_GUARD_CACHE` | Optional | Enables the CourtListener lookup cache. |
+| `CASELAW_GUARD_CACHE_TTL_DAYS` | Optional | Overrides the default CourtListener cache TTL of 30 days. |
+
+Omit provider environment variables for adapters you do not want to enable.
+
+### Troubleshooting
+
+- Use an absolute `command` path if the agent cannot find `caselaw-guard-mcp`.
+- Verify installation with `/path/to/caselaw-guard/.venv/bin/caselaw-guard-mcp`; stop it with `Ctrl+C` after it starts.
+- Confirm provider environment variables are present in the agent MCP config, not only in your interactive shell.
+- If the server exits with an MCP install hint, reinstall with `python3 -m pip install -e ".[mcp]"`.
 
 ## Adapters
 

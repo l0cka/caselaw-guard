@@ -27,6 +27,12 @@ def test_index_stats_prints_counts(tmp_path: Path) -> None:
 
 
 def test_serve_help_lists_index_option() -> None:
-    result = runner.invoke(app, ["serve", "--help"])
+    # Force wide, plain output so rich-rendered help doesn't wrap "--index" or
+    # embed ANSI escapes that would defeat the substring check on narrow CI runners.
+    result = runner.invoke(
+        app,
+        ["serve", "--help"],
+        env={"COLUMNS": "200", "NO_COLOR": "1", "TERM": "dumb"},
+    )
     assert result.exit_code == 0
     assert "--index" in result.stdout

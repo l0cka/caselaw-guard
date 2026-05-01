@@ -51,6 +51,9 @@ AU_NEUTRAL_RE = re.compile(
 
 
 def extract_citations(text: str) -> list[CitationMatch]:
+    if not text:
+        return []
+
     matches: list[CitationMatch] = []
     seen: set[tuple[int, int, str]] = set()
 

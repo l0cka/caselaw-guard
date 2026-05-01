@@ -4,6 +4,7 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+- Updated release documentation now that the package is published on PyPI.
 - Added manual PyPI Trusted Publishing workflow automation.
 - Added a manual v0.1 release checklist and expanded wheel smoke validation.
 - Added optional Australian index verification metrics to the AusLaw benchmark harness.

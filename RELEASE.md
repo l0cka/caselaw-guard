@@ -56,7 +56,7 @@ PY
 
 ## GitHub Release
 
-After validation:
+For a new version, after validation:
 
 ```bash
 git status --short
@@ -64,13 +64,13 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Create the GitHub release from tag `v0.1.0` using the `0.1.0` changelog entries.
+Create the GitHub release from the version tag using the matching changelog entries.
 
 ## PyPI Publishing
 
-Publishing is intentionally manual until the first release path is proven. Use PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, `id-token: write`, and `pypa/gh-action-pypi-publish@release/v1`.
+Publishing is manual and uses PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, `id-token: write`, and `pypa/gh-action-pypi-publish@release/v1`.
 
-Before the first publish, create a pending trusted publisher in PyPI:
+The PyPI project is configured to trust this GitHub Actions publisher:
 
 | Field | Value |
 | --- | --- |
@@ -80,7 +80,7 @@ Before the first publish, create a pending trusted publisher in PyPI:
 | Workflow name | `publish.yml` |
 | Environment name | `pypi` |
 
-After the pending publisher exists, run the manual GitHub Actions workflow:
+Run the manual GitHub Actions workflow for the version tag:
 
 ```bash
 gh workflow run publish.yml -f ref=v0.1.0

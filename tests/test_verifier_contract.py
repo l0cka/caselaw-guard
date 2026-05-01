@@ -73,3 +73,10 @@ def test_verify_text_passes_when_document_has_no_citations():
 
     assert report.pass_ is True
     assert report.results == []
+
+
+def test_verify_text_passes_when_document_is_empty():
+    report = verify_text("", adapters=[RecordingAdapter()])
+
+    assert report.pass_ is True
+    assert report.results == []

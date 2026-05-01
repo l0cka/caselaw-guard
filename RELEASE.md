@@ -60,8 +60,8 @@ For a new version, after validation:
 
 ```bash
 git status --short
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 Create the GitHub release from the version tag using the matching changelog entries.
@@ -83,7 +83,7 @@ The PyPI project is configured to trust this GitHub Actions publisher:
 Run the manual GitHub Actions workflow for the version tag:
 
 ```bash
-gh workflow run publish.yml -f ref=v0.1.0
+gh workflow run publish.yml -f ref=v0.1.1
 gh run watch
 ```
 

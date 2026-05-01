@@ -14,35 +14,37 @@ The v0 guarantee is deliberately narrow: **citation existence only**. It does no
 
 ## Install
 
-Install the base package from PyPI:
+For the command-line verifier:
 
 ```bash
 python3 -m pip install caselaw-guard
 ```
 
-From a local checkout for development:
-
-```bash
-python3 -m pip install -e ".[dev]"
-```
-
-Install with local MCP server support:
+For local agent or MCP use:
 
 ```bash
 python3 -m pip install "caselaw-guard[mcp]"
 ```
 
-## CLI
+## Quickstart
 
-Verify a Markdown or text draft:
+Verify a draft after setting up a provider:
 
 ```bash
-caselaw-guard verify draft.md \
-  --courtlistener-token "$CASELAW_GUARD_COURTLISTENER_TOKEN" \
-  --au-index examples/australia_index.sample.json
+caselaw-guard verify draft.md
 ```
 
-Read from stdin:
+CaseLaw Guard fails closed. If no configured provider supports an extracted citation, the result is not treated as verified.
+
+Most users need one provider setup:
+
+| Citation source | Setup |
+| --- | --- |
+| U.S. case citations | Set `CASELAW_GUARD_COURTLISTENER_TOKEN` or pass `--courtlistener-token`. |
+| Australian neutral citations | Pass `--au-index /path/to/australia-index.json` or set `CASELAW_GUARD_AU_INDEX`. |
+| Local agents over MCP | Install `caselaw-guard[mcp]`, then run `caselaw-guard-mcp`. |
+
+For a no-network smoke test, verify Australian neutral citations from stdin using a local index:
 
 ```bash
 printf 'Mabo v Queensland (No 2) [1992] HCA 23\n' \
@@ -50,6 +52,16 @@ printf 'Mabo v Queensland (No 2) [1992] HCA 23\n' \
 ```
 
 The CLI exits `0` only when every extracted citation is `verified`; otherwise it exits `1`.
+
+## CLI
+
+Verify a Markdown or text draft with explicit providers:
+
+```bash
+caselaw-guard verify draft.md \
+  --courtlistener-token "$CASELAW_GUARD_COURTLISTENER_TOKEN" \
+  --au-index examples/australia_index.sample.json
+```
 
 Use an opt-in CourtListener cache when repeated checks are expected:
 
@@ -113,12 +125,6 @@ Response shape:
 ```
 
 ## MCP Server
-
-Install the optional MCP extra when using CaseLaw Guard from local agents. From a local checkout:
-
-```bash
-python3 -m pip install -e ".[mcp]"
-```
 
 Run the local stdio MCP server directly to confirm it starts:
 
@@ -225,6 +231,12 @@ If more than one index row has the same `normalized_citation`, the adapter retur
 python3 -m venv .venv
 .venv/bin/python -m pip install ".[dev]"
 .venv/bin/python -m pytest
+```
+
+Install MCP support from a local checkout:
+
+```bash
+.venv/bin/python -m pip install -e ".[mcp]"
 ```
 
 ## Benchmarks

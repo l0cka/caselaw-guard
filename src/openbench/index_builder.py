@@ -104,11 +104,7 @@ def build_index(
         merged = list(bucket.values())
         entries[citation] = merged[0] if len(merged) == 1 else merged
 
-    generated_at = (
-        datetime.now(UTC)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z")
-    )
+    generated_at = datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
     return {
         "index_version": version,

@@ -40,8 +40,8 @@ REJECTED = [
     "[1992] HCA abc",
     "[1899] HCA 1",  # below year floor
     "[3000] HCA 1",  # above year ceiling
-    "[1992] 23",     # missing court
-    "HCA 23",        # missing year
+    "[1992] 23",  # missing court
+    "HCA 23",  # missing year
 ]
 
 

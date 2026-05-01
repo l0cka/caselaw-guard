@@ -226,9 +226,9 @@ def test_schema_accepts_minimal_valid_index() -> None:
                 "source": "open-australian-legal-corpus",
                 "source_record_ids": ["abc"],
                 "indexed_at": "2026-05-01",
-                "license": "CC-BY-4.0"
+                "license": "CC-BY-4.0",
             }
-        }
+        },
     }
     jsonschema.validate(valid, schema)
 
@@ -253,9 +253,9 @@ def test_schema_rejects_bad_normalized_citation() -> None:
                 "source": "open-australian-legal-corpus",
                 "source_record_ids": ["abc"],
                 "indexed_at": "2026-05-01",
-                "license": "CC-BY-4.0"
+                "license": "CC-BY-4.0",
             }
-        }
+        },
     }
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, schema)

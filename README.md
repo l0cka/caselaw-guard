@@ -236,7 +236,17 @@ Run the AusLaw Citation Benchmark extraction eval manually to measure Australian
   --output .cache/caselaw-guard/auslaw-citation-benchmark/report.json
 ```
 
-By default, the script downloads the benchmark test split from Hugging Face into `.cache/caselaw-guard/auslaw-citation-benchmark/roc_test.json` and reuses it on later runs. Pass `--refresh` to redownload it, or `--input /path/to/roc_test.json` to evaluate a local copy. This eval measures citation extraction only; verification against a local Australian index is intentionally separate.
+By default, the script downloads the benchmark test split from Hugging Face into `.cache/caselaw-guard/auslaw-citation-benchmark/roc_test.json` and reuses it on later runs. Pass `--refresh` to redownload it, or `--input /path/to/roc_test.json` to evaluate a local copy.
+
+To measure end-to-end verification coverage against a compact Australian index, pass `--au-index`:
+
+```bash
+.venv/bin/python scripts/eval_auslaw_benchmark.py \
+  --au-index /absolute/path/to/australia-index.json \
+  --output .cache/caselaw-guard/auslaw-citation-benchmark/verification-report.json
+```
+
+Without `--au-index`, the eval measures extraction only. With `--au-index`, it also reports verification status counts and capped not-found or ambiguous examples.
 
 ## Release Readiness
 

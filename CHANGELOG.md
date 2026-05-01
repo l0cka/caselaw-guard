@@ -4,6 +4,8 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+- Simplified README install and quickstart guidance.
+
 ## 0.1.1
 
 - Fixed empty input verification so it returns a passing empty report instead of raising from citation extraction.

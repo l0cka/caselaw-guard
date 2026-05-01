@@ -14,8 +14,22 @@ The v0 guarantee is deliberately narrow: **citation existence only**. It does no
 
 ## Install
 
+After the first PyPI release, install the base package:
+
+```bash
+python3 -m pip install caselaw-guard
+```
+
+From a local checkout for development:
+
 ```bash
 python3 -m pip install -e ".[dev]"
+```
+
+After publication, install with local MCP server support:
+
+```bash
+python3 -m pip install "caselaw-guard[mcp]"
 ```
 
 ## CLI
@@ -169,10 +183,21 @@ python3 -m venv .venv
 .venv/bin/python -m pytest
 ```
 
+## Release Readiness
+
+The package build is validated in CI, but publishing is not enabled yet. When publishing is needed, use PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, grant the workflow `id-token: write`, and publish with `pypa/gh-action-pypi-publish@release/v1`.
+
+Before publishing a release:
+
+```bash
+python3 -m pip install build twine
+python3 -m build
+python3 -m twine check dist/*
+```
+
 ## Non-Goals For v0
 
 - No proposition-support checking.
 - No good-law or precedential-status analysis.
 - No PDF or DOCX parsing.
-- No MCP server.
 - No legal advice.

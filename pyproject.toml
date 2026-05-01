@@ -13,6 +13,21 @@ authors = [
   { name = "CaseLaw Guard contributors" }
 ]
 keywords = ["legaltech", "citations", "case-law", "ai-safety", "agents"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Legal Industry",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Processing :: Indexing",
+  "Typing :: Typed"
+]
 dependencies = [
   "eyecite>=2.7",
   "fastapi>=0.110",
@@ -29,6 +44,12 @@ dev = [
 mcp = [
   "mcp>=1,<2"
 ]
+
+[project.urls]
+Homepage = "https://github.com/l0cka/caselaw-guard"
+Repository = "https://github.com/l0cka/caselaw-guard"
+Issues = "https://github.com/l0cka/caselaw-guard/issues"
+Changelog = "https://github.com/l0cka/caselaw-guard/blob/main/CHANGELOG.md"
 
 [project.scripts]
 caselaw-guard = "caselaw_guard.cli:app"

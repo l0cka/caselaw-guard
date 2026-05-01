@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -27,6 +28,7 @@ def test_cli_exits_nonzero_when_any_citation_is_unverified(tmp_path):
             "--au-index",
             str(FIXTURE_INDEX),
         ],
+        env={**os.environ, "PYTHONPATH": "src"},
         text=True,
         capture_output=True,
         check=False,

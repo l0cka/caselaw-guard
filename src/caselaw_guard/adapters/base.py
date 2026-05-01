@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from caselaw_guard.models import Authority, CitationMatch, VerificationStatus
 
@@ -13,6 +13,8 @@ class LookupResult:
     source_url: str | None = None
     confidence: float = 0.0
     error_message: str | None = None
+    candidates: list[Authority] = field(default_factory=list)
+    provider_metadata: dict[str, object] = field(default_factory=dict)
 
 
 class CitationAdapter:

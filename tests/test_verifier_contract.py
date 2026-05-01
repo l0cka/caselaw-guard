@@ -27,6 +27,7 @@ class RecordingAdapter(CitationAdapter):
                 ),
                 source_url="https://www.courtlistener.com/opinion/2812209/obergefell-v-hodges/",
                 confidence=1.0,
+                provider_metadata={"source": "fixture"},
             )
         return LookupResult(status=VerificationStatus.NOT_FOUND, normalized_citation=citation.text)
 
@@ -62,6 +63,8 @@ def test_verify_text_returns_stable_contract_and_fails_closed_for_unresolved_cit
         "status",
         "confidence",
         "error_message",
+        "candidates",
+        "provider_metadata",
     }
 
 

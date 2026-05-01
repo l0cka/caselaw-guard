@@ -37,6 +37,26 @@ printf 'Mabo v Queensland (No 2) [1992] HCA 23\n' \
 
 The CLI exits `0` only when every extracted citation is `verified`; otherwise it exits `1`.
 
+Use an opt-in CourtListener cache when repeated checks are expected:
+
+```bash
+caselaw-guard verify draft.md \
+  --courtlistener-token "$CASELAW_GUARD_COURTLISTENER_TOKEN" \
+  --cache .cache/courtlistener.json \
+  --cache-ttl-days 30
+```
+
+The cache stores citation lookup inputs and provider results only. It does not store source document text, and provider errors or rate-limit responses are not cached.
+
+Build a compact Australian citation index from a local Open Australian Legal Corpus `corpus.jsonl`:
+
+```bash
+caselaw-guard au-index build ~/Downloads/corpus.jsonl \
+  --output data/australia-index.json
+```
+
+The builder only indexes rows where `type == "decision"`, extracts neutral citations from `citation`, and omits the full `text` field.
+
 ## REST API
 
 Run the API:
@@ -70,7 +90,9 @@ Response shape:
       "source_url": null,
       "status": "unsupported_format",
       "confidence": 0.0,
-      "error_message": "No configured adapter supports this citation format."
+      "error_message": "No configured adapter supports this citation format.",
+      "candidates": [],
+      "provider_metadata": {}
     }
   ]
 }
@@ -83,6 +105,8 @@ Response shape:
 The CourtListener adapter verifies U.S. citations through the CourtListener citation lookup API. Configure it with `CASELAW_GUARD_COURTLISTENER_TOKEN` or `--courtlistener-token`.
 
 The adapter sends citation components such as `volume=576`, `reporter=U.S.`, and `page=644`, not the full source document.
+
+Set `CASELAW_GUARD_CACHE` to enable a persistent cache without passing `--cache`; set `CASELAW_GUARD_CACHE_TTL_DAYS` to change expiry.
 
 ### Australia
 
@@ -101,11 +125,13 @@ The Australian adapter verifies neutral citations against a local JSON metadata 
 ]
 ```
 
+If more than one index row has the same `normalized_citation`, the adapter returns `ambiguous` and exposes each match in `candidates`.
+
 ## Development
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -e ".[dev]"
+.venv/bin/python -m pip install ".[dev]"
 .venv/bin/python -m pytest
 ```
 

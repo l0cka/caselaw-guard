@@ -45,6 +45,8 @@ class VerificationResult(BaseModel):
     status: VerificationStatus
     confidence: float
     error_message: str | None = None
+    candidates: list[Authority] = Field(default_factory=list)
+    provider_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class VerificationReport(BaseModel):

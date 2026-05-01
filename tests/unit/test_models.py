@@ -1,5 +1,8 @@
+import json
 from datetime import date
+from pathlib import Path
 
+import jsonschema
 import pytest
 from pydantic import ValidationError
 
@@ -192,3 +195,67 @@ def test_index_metadata_round_trip() -> None:
     )
     j = md.model_dump(mode="json")
     assert IndexMetadata.model_validate(j) == md
+
+
+SCHEMA_PATH = Path(__file__).parent.parent.parent / "schemas" / "index.schema.json"
+
+
+def _load_schema() -> dict:
+    return json.loads(SCHEMA_PATH.read_text())
+
+
+def test_schema_accepts_minimal_valid_index() -> None:
+    schema = _load_schema()
+    valid = {
+        "index_version": "2026-05-01",
+        "generated_at": "2026-05-01T00:00:00Z",
+        "builder_version": "0.1.0",
+        "source": "open-australian-legal-corpus",
+        "license": "CC-BY-4.0",
+        "record_count": 1,
+        "entries": {
+            "[1992] HCA 23": {
+                "normalized_citation": "[1992] HCA 23",
+                "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
+                "case_name": "Mabo v Queensland (No 2)",
+                "court": "High Court of Australia",
+                "court_code": "HCA",
+                "jurisdiction": "cth",
+                "date": "1992-06-03",
+                "source_urls": ["https://example.org/mabo"],
+                "source": "open-australian-legal-corpus",
+                "source_record_ids": ["abc"],
+                "indexed_at": "2026-05-01",
+                "license": "CC-BY-4.0"
+            }
+        }
+    }
+    jsonschema.validate(valid, schema)
+
+
+def test_schema_rejects_bad_normalized_citation() -> None:
+    schema = _load_schema()
+    bad = {
+        "index_version": "2026-05-01",
+        "generated_at": "2026-05-01T00:00:00Z",
+        "builder_version": "0.1.0",
+        "source": "open-australian-legal-corpus",
+        "license": "CC-BY-4.0",
+        "record_count": 1,
+        "entries": {
+            "(1992) 175 CLR 1": {
+                "normalized_citation": "(1992) 175 CLR 1",
+                "citation": "Mabo (1992) 175 CLR 1",
+                "case_name": "Mabo",
+                "court_code": "HCA",
+                "date": "1992-06-03",
+                "source_urls": ["https://example.org/mabo"],
+                "source": "open-australian-legal-corpus",
+                "source_record_ids": ["abc"],
+                "indexed_at": "2026-05-01",
+                "license": "CC-BY-4.0"
+            }
+        }
+    }
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(bad, schema)

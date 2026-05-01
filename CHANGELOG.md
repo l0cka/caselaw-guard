@@ -4,6 +4,7 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+- Added Codex and Claude Code setup examples for the local MCP server.
 - Added package build validation for future PyPI releases.
 - Documented the intended PyPI Trusted Publishing path.
 

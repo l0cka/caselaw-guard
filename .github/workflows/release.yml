@@ -1,0 +1,37 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - run: uv python install 3.12
+
+      - run: uv sync --extra dev --extra release
+
+      - name: Build release index
+        run: |
+          uv run python scripts/build_release_index.py \
+            --output "index-${TAG_NAME}.json" \
+            --index-version "${TAG_NAME}"
+
+      - name: Upload index artifact to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            index-${{ env.TAG_NAME }}.json
+            index-${{ env.TAG_NAME }}.json.zst

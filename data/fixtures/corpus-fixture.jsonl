@@ -1,0 +1,6 @@
+{"type":"decision","citation":"Mabo v Queensland (No 2) [1992] HCA 23","url":"https://example.org/mabo","jurisdiction":"commonwealth","date":"1992-06-03","source":"hca","id":"hca-1992-23"}
+{"type":"decision","citation":"Mabo v Queensland (No 2) [1992] HCA 23","url":"https://example.org/mabo-mirror","jurisdiction":"commonwealth","date":"1992-06-03","source":"austlii-mirror","id":"austlii-mabo"}
+{"type":"decision","citation":"First Synthetic Case [2024] NSWSC 9999","url":"https://example.org/first","jurisdiction":"new_south_wales","date":"2024-01-01","source":"nswsc","id":"nswsc-2024-9999-a"}
+{"type":"decision","citation":"Second Synthetic Case [2024] NSWSC 9999","url":"https://example.org/second","jurisdiction":"new_south_wales","date":"2024-01-15","source":"nswsc","id":"nswsc-2024-9999-b"}
+{"type":"decision","citation":"Commonwealth v Tasmania [1983] HCA 21","url":"https://example.org/tasdam","jurisdiction":"commonwealth","date":"1983-07-01","source":"hca","id":"hca-1983-21"}
+{"type":"primary_legislation","citation":"Acts Interpretation Act 1901","url":"https://example.org/aia","jurisdiction":"commonwealth","date":"1901-07-01","source":"comlaw","id":"aia-1901"}

@@ -32,6 +32,11 @@ dev = [
   "ruff>=0.5",
   "twine>=5",
 ]
+release = [
+  "huggingface-hub>=0.23",
+  "datasets>=2.20",
+  "zstandard>=0.22",
+]
 
 [project.scripts]
 openbench = "openbench.cli:app"

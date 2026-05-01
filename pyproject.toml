@@ -58,6 +58,7 @@ ignore = ["PLR0913"]  # allow many args in fastapi handlers
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["PLR2004"]  # magic numbers in tests are fine
+"src/openbench/cli.py" = ["B008"]  # typer uses function calls in argument defaults by design
 
 [tool.mypy]
 python_version = "3.12"

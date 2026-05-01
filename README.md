@@ -9,7 +9,7 @@ openbench resolves Australian neutral citations (e.g. `[1992] HCA 23`) against a
 ## Quickstart
 
 ```bash
-git clone https://github.com/danielkurdi/openbench
+git clone https://github.com/l0cka/openbench
 cd openbench
 uv sync --extra dev
 uv run openbench serve --index data/fixtures/index.json

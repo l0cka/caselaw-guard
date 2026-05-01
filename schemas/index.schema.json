@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/danielkurdi/openbench/schemas/index.schema.json",
+  "$id": "https://github.com/l0cka/openbench/schemas/index.schema.json",
   "title": "openbench index file",
   "type": "object",
   "additionalProperties": false,

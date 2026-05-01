@@ -42,8 +42,8 @@ release = [
 openbench = "openbench.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/danielkurdi/openbench"
-Issues = "https://github.com/danielkurdi/openbench/issues"
+Homepage = "https://github.com/l0cka/openbench"
+Issues = "https://github.com/l0cka/openbench/issues"
 
 [build-system]
 requires = ["hatchling"]

@@ -7,7 +7,7 @@ Thanks for your interest. openbench is small and intentionally focused.
 Requires `uv` and Python 3.12+.
 
 ```bash
-git clone https://github.com/danielkurdi/openbench
+git clone https://github.com/l0cka/openbench
 cd openbench
 uv sync --extra dev
 ```

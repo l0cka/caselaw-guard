@@ -227,6 +227,17 @@ python3 -m venv .venv
 .venv/bin/python -m pytest
 ```
 
+## Benchmarks
+
+Run the AusLaw Citation Benchmark extraction eval manually to measure Australian neutral citation coverage:
+
+```bash
+.venv/bin/python scripts/eval_auslaw_benchmark.py \
+  --output .cache/caselaw-guard/auslaw-citation-benchmark/report.json
+```
+
+By default, the script downloads the benchmark test split from Hugging Face into `.cache/caselaw-guard/auslaw-citation-benchmark/roc_test.json` and reuses it on later runs. Pass `--refresh` to redownload it, or `--input /path/to/roc_test.json` to evaluate a local copy. This eval measures citation extraction only; verification against a local Australian index is intentionally separate.
+
 ## Release Readiness
 
 The package build is validated in CI, but publishing is not enabled yet. When publishing is needed, use PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, grant the workflow `id-token: write`, and publish with `pypa/gh-action-pypi-publish@release/v1`.

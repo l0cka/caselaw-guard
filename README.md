@@ -14,7 +14,7 @@ The v0 guarantee is deliberately narrow: **citation existence only**. It does no
 
 ## Install
 
-After the first PyPI release, install the base package from PyPI:
+Install the base package from PyPI:
 
 ```bash
 python3 -m pip install caselaw-guard
@@ -26,7 +26,7 @@ From a local checkout for development:
 python3 -m pip install -e ".[dev]"
 ```
 
-After the first PyPI release, install with local MCP server support:
+Install with local MCP server support:
 
 ```bash
 python3 -m pip install "caselaw-guard[mcp]"
@@ -250,7 +250,7 @@ Without `--au-index`, the eval measures extraction only. With `--au-index`, it a
 
 ## Release Readiness
 
-The package build is validated in CI, but publishing is not enabled yet. See `RELEASE.md` for the manual v0.1 release checklist.
+The package build and manual PyPI publishing workflow are validated in CI. See `RELEASE.md` for the release checklist.
 
 ## Non-Goals For v0
 

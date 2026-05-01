@@ -4,6 +4,9 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+## 0.1.1
+
+- Fixed empty input verification so it returns a passing empty report instead of raising from citation extraction.
 - Updated release documentation now that the package is published on PyPI.
 - Added manual PyPI Trusted Publishing workflow automation.
 - Added a manual v0.1 release checklist and expanded wheel smoke validation.

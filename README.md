@@ -98,6 +98,40 @@ Response shape:
 }
 ```
 
+## MCP Server
+
+Install the optional MCP extra when using CaseLaw Guard from local agents:
+
+```bash
+python3 -m pip install -e ".[mcp]"
+```
+
+Run the local stdio MCP server:
+
+```bash
+caselaw-guard-mcp
+```
+
+Example agent configuration:
+
+```json
+{
+  "mcpServers": {
+    "caselaw-guard": {
+      "command": "caselaw-guard-mcp",
+      "env": {
+        "CASELAW_GUARD_COURTLISTENER_TOKEN": "your-courtlistener-token",
+        "CASELAW_GUARD_AU_INDEX": "/absolute/path/to/australia-index.json",
+        "CASELAW_GUARD_CACHE": "/absolute/path/to/courtlistener-cache.json",
+        "CASELAW_GUARD_CACHE_TTL_DAYS": "30"
+      }
+    }
+  }
+}
+```
+
+The server exposes one tool, `verify_case_law_text`, which accepts `text` and returns the same JSON report shape as the CLI and REST API. Omit provider environment variables for adapters you do not want to enable.
+
 ## Adapters
 
 ### CourtListener

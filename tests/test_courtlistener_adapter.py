@@ -2,8 +2,12 @@ import httpx
 import pytest
 
 from caselaw_guard.adapters import build_adapters
+from caselaw_guard.adapters.australia import AustralianCorpusAdapter
 from caselaw_guard.adapters.courtlistener import CourtListenerAdapter
 from caselaw_guard.models import CitationMatch, VerificationStatus
+
+
+FIXTURE_INDEX = "tests/fixtures/australia_index.json"
 
 
 def test_courtlistener_adapter_sends_citation_components_not_document_text():
@@ -270,3 +274,12 @@ def test_build_adapters_reads_opt_in_cache_environment(monkeypatch, tmp_path):
     assert isinstance(adapters[0], CourtListenerAdapter)
     assert adapters[0].cache_path == cache_path
     assert adapters[0].cache_ttl.days == 7
+
+
+def test_build_adapters_reads_australian_index_environment(monkeypatch):
+    monkeypatch.setenv("CASELAW_GUARD_AU_INDEX", FIXTURE_INDEX)
+
+    adapters = build_adapters(no_courtlistener=True)
+
+    assert len(adapters) == 1
+    assert isinstance(adapters[0], AustralianCorpusAdapter)

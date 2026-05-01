@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-NEUTRAL_RE = re.compile(r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Z][A-Z0-9]{1,9})\s+(?P<number>\d{1,5})")
+NEUTRAL_RE = re.compile(r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Za-z][A-Za-z0-9]{1,12})\s+(?P<number>\d{1,5})")
 
 
 @dataclass(slots=True)

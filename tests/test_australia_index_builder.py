@@ -85,3 +85,26 @@ def test_au_index_cli_builds_index(tmp_path):
     assert completed.returncode == 0
     assert json.loads(output.read_text(encoding="utf-8"))[0]["normalized_citation"] == "[1983] HCA 21"
     assert '"records_written": 1' in completed.stdout
+
+
+def test_build_australian_index_accepts_mixed_case_neutral_court_code(tmp_path):
+    corpus = tmp_path / "corpus.jsonl"
+    output = tmp_path / "index.json"
+    corpus.write_text(
+        json.dumps(
+            {
+                "type": "decision",
+                "source": "Industrial Relations Commission of New South Wales",
+                "date": "2012-05-01",
+                "citation": "Example v Respondent [2012] NSWIRComm 42",
+                "url": "https://example.test/nswircomm/42",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    stats = build_australian_index(corpus, output)
+
+    assert stats.records_written == 1
+    assert json.loads(output.read_text(encoding="utf-8"))[0]["normalized_citation"] == "[2012] NSWIRComm 42"

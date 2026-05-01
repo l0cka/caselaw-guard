@@ -18,6 +18,15 @@ AU_NEUTRAL_COURTS = {
     "NSWSC",
     "NSWDC",
     "NSWCAT",
+    "NSWCATAP",
+    "NSWCATAD",
+    "NSWCATOD",
+    "NSWCATEN",
+    "NSWLEC",
+    "NSWADT",
+    "NSWADTAP",
+    "NSWIRComm",
+    "NSWMT",
     "VCA",
     "VSCA",
     "VSC",
@@ -37,7 +46,7 @@ AU_NEUTRAL_COURTS = {
 }
 
 AU_NEUTRAL_RE = re.compile(
-    r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Z][A-Z0-9]{1,9})\s+(?P<number>\d{1,5})"
+    r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Za-z][A-Za-z0-9]{1,12})\s+(?P<number>\d{1,5})"
 )
 
 

@@ -4,6 +4,7 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+- Improved Australian neutral citation extraction coverage for NSW tribunal and court codes surfaced by the AusLaw benchmark.
 - Added a manual AusLaw Citation Benchmark extraction eval harness.
 - Added Codex and Claude Code setup examples for the local MCP server.
 - Added package build validation for future PyPI releases.

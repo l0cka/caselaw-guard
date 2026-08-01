@@ -4,6 +4,8 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0 — 2026-08-01
+
 - Consolidated OpenBench's Australian citation lookup, index builder and data
   provenance into CaseLaw Guard.
 - Added parenthesised, bare-year, lower-case, pinpoint and alphanumeric-court

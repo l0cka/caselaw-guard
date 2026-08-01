@@ -15,6 +15,7 @@ import jsonschema
 from caselaw_guard.australia.index_builder import write_index
 
 DATASET = "isaacus/open-australian-legal-corpus"
+DATASET_SPLIT = "corpus"
 SCHEMA_PATH = Path(__file__).parent.parent / "schemas" / "australia-index.schema.json"
 
 
@@ -29,7 +30,7 @@ def _dataset_revision() -> str:
 def _stream_decisions_to_jsonl(output_path: Path, *, revision: str | None) -> int:
     from datasets import load_dataset
 
-    kwargs: dict[str, object] = {"split": "train", "streaming": True}
+    kwargs: dict[str, object] = {"split": DATASET_SPLIT, "streaming": True}
     if revision is not None:
         kwargs["revision"] = revision
     dataset = load_dataset(DATASET, **kwargs)

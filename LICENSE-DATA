@@ -1,0 +1,31 @@
+CaseLaw Guard Australian Index Data — CC-BY-4.0 NOTICE
+======================================================
+
+This notice applies to:
+
+- Australian citation index fixtures in this repository; and
+- each Australian index artifact published with CaseLaw Guard.
+
+The index files are derived from the Open Australian Legal Corpus by Isaacus:
+
+  https://huggingface.co/datasets/isaacus/open-australian-legal-corpus
+
+The source corpus is licensed under the Creative Commons Attribution 4.0
+International Licence (CC-BY-4.0):
+
+  https://creativecommons.org/licenses/by/4.0/
+
+CaseLaw Guard makes these changes:
+
+- filters the corpus to court decisions;
+- extracts citation, case name, court, jurisdiction, date and source metadata;
+- discards the full judgment text;
+- normalises neutral citations; and
+- deduplicates matching source records into a JSON index.
+
+Each redistribution of an index must include this attribution:
+
+  "Open Australian Legal Corpus by Isaacus, CC-BY-4.0, modified by CaseLaw
+  Guard (metadata extraction, normalisation and deduplication)."
+
+CaseLaw Guard's source code is licensed under Apache-2.0. See LICENSE.

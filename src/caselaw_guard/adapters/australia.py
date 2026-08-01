@@ -1,15 +1,23 @@
 from __future__ import annotations
 
-import json
-import re
 from pathlib import Path
-from typing import Any
 
 from caselaw_guard.adapters.base import CitationAdapter, LookupResult
+from caselaw_guard.australia import (
+    AustralianCitationService,
+    AustralianLookupResult,
+    AustralianLookupStatus,
+    IndexEntry,
+    IndexLoadError,
+)
 from caselaw_guard.models import Authority, CitationMatch, VerificationStatus
 
-
-NEUTRAL_RE = re.compile(r"\[\d{4}\]\s+[A-Z][A-Z0-9]{1,9}\s+\d{1,5}")
+_STATUS_MAP = {
+    AustralianLookupStatus.VERIFIED: VerificationStatus.VERIFIED,
+    AustralianLookupStatus.NOT_FOUND: VerificationStatus.NOT_FOUND,
+    AustralianLookupStatus.AMBIGUOUS: VerificationStatus.AMBIGUOUS,
+    AustralianLookupStatus.UNSUPPORTED_FORMAT: VerificationStatus.UNSUPPORTED_FORMAT,
+}
 
 
 class AustralianCorpusAdapter(CitationAdapter):
@@ -18,68 +26,53 @@ class AustralianCorpusAdapter(CitationAdapter):
 
     def __init__(self, index_path: str | Path):
         self.index_path = Path(index_path)
-        self._records = self._load_index(self.index_path)
+        try:
+            self.service = AustralianCitationService.load(self.index_path)
+        except IndexLoadError as error:
+            raise ValueError(
+                f"Could not load Australian index at {self.index_path}: {error}. "
+                "Build a valid index with: caselaw-guard au-index build CORPUS --output INDEX"
+            ) from error
 
     def lookup(self, citation: CitationMatch) -> LookupResult:
-        normalized = self._normalize(citation.text)
-        record = self._records.get(normalized)
-        if not record:
-            return LookupResult(status=VerificationStatus.NOT_FOUND, normalized_citation=normalized)
-        if len(record) > 1:
-            return LookupResult(
-                status=VerificationStatus.AMBIGUOUS,
-                normalized_citation=normalized,
-                candidates=[self._authority_from_record(candidate) for candidate in record],
-                confidence=0.5,
-            )
+        return map_australian_lookup(self.service.lookup(citation.text))
 
-        authority = self._authority_from_record(record[0])
-        return LookupResult(
-            status=VerificationStatus.VERIFIED,
-            normalized_citation=normalized,
-            authority=authority,
-            source_url=authority.source_url,
-            confidence=1.0,
-        )
 
-    @classmethod
-    def _load_index(cls, index_path: Path) -> dict[str, list[dict[str, Any]]]:
-        with index_path.open("r", encoding="utf-8") as file:
-            data = json.load(file)
+def map_australian_lookup(result: AustralianLookupResult) -> LookupResult:
+    authority = _authority_from_entry(result.entries[0]) if result.status is AustralianLookupStatus.VERIFIED else None
+    candidates = (
+        [_authority_from_entry(entry) for entry in result.entries]
+        if result.status is AustralianLookupStatus.AMBIGUOUS
+        else []
+    )
+    normalized = result.normalized_citation
+    if normalized is None and result.rejection_reason == "year_out_of_range":
+        normalized = result.raw_citation
 
-        if not isinstance(data, list):
-            raise ValueError("Australian index must be a JSON array.")
+    return LookupResult(
+        status=_STATUS_MAP[result.status],
+        normalized_citation=normalized,
+        authority=authority,
+        source_url=authority.source_url if authority else None,
+        confidence=result.confidence,
+        error_message=result.rejection_reason,
+        candidates=candidates,
+        provider_metadata=result.provenance.model_dump(mode="json"),
+    )
 
-        records: dict[str, list[dict[str, Any]]] = {}
-        for index, record in enumerate(data):
-            if not isinstance(record, dict):
-                raise ValueError(f"Australian index row {index} must be an object.")
-            normalized = record.get("normalized_citation")
-            if not isinstance(normalized, str) or not normalized.strip():
-                raise ValueError(f"Australian index row {index} is missing normalized_citation.")
-            records.setdefault(cls._normalize(normalized), []).append(record)
-        return records
 
-    @staticmethod
-    def _authority_from_record(record: dict[str, Any]) -> Authority:
-        source_url = record.get("source_url") or record.get("url")
-        return Authority(
-            case_name=record.get("case_name") or record.get("citation"),
-            court=record.get("court") or record.get("source"),
-            date=record.get("date"),
-            source_url=source_url,
-            metadata={
-                key: value
-                for key, value in record.items()
-                if key not in {"case_name", "court", "date", "source_url", "url"}
-            },
-        )
-
-    @staticmethod
-    def _extract_neutral(citation: str) -> str | None:
-        match = NEUTRAL_RE.search(citation)
-        return match.group(0) if match else None
-
-    @staticmethod
-    def _normalize(citation: str) -> str:
-        return " ".join(citation.strip().split())
+def _authority_from_entry(entry: IndexEntry) -> Authority:
+    source_url = entry.source_urls[0]
+    return Authority(
+        case_name=entry.case_name,
+        court=entry.court,
+        date=entry.date.isoformat(),
+        source_url=source_url,
+        metadata={
+            "court_code": entry.court_code,
+            "jurisdiction": entry.jurisdiction,
+            "source_urls": list(entry.source_urls),
+            "source": entry.source,
+            "license": entry.license,
+        },
+    )

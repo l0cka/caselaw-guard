@@ -1,6 +1,6 @@
 # CaseLaw Guard
 
-CaseLaw Guard is an Apache-2.0 verifier for agents and drafting workflows that need to fail closed on fabricated case-law citations.
+CaseLaw Guard is an Apache-2.0 verifier for agents and drafting workflows that need to fail closed on fabricated case-law citations. Australian citation-index support is built into the package and works offline with a local index.
 
 The v0 guarantee is deliberately narrow: **citation existence only**. It does not decide whether a case supports a legal proposition, whether a case remains good law, or whether any output is legal advice.
 
@@ -78,17 +78,29 @@ Build a compact Australian citation index from a local Open Australian Legal Cor
 
 ```bash
 caselaw-guard au-index build ~/Downloads/corpus.jsonl \
-  --output data/australia-index.json
+  --output data/australia-index.json \
+  --index-version 2026-08-01 \
+  --dataset-revision DATASET_COMMIT
 ```
 
-The builder only indexes rows where `type == "decision"`, extracts neutral citations from `citation`, and omits the full `text` field.
+The builder writes the canonical, attributed index format. It only indexes rows where `type == "decision"`, extracts neutral citations from `citation`, deduplicates matching records and omits the full `text` field. If the dataset revision is unavailable, omit it and the builder records `unknown`.
+
+Inspect an index or migrate a legacy flat-array index without changing the original file:
+
+```bash
+caselaw-guard au-index stats data/australia-index.json
+caselaw-guard au-index migrate legacy-index.json --output canonical-index.json
+```
+
+Version 0.2.0 reads canonical and legacy indexes. New builds always use the canonical format; legacy support is transitional and has no scheduled removal version.
 
 ## REST API
 
 Run the API:
 
 ```bash
-uvicorn caselaw_guard.api:app --reload
+CASELAW_GUARD_AU_INDEX=/absolute/path/to/australia-index.json \
+  uvicorn caselaw_guard.api:app --reload
 ```
 
 Request:
@@ -123,6 +135,17 @@ Response shape:
   ]
 }
 ```
+
+The same application provides read-only Australian routes:
+
+| Route | Purpose |
+| --- | --- |
+| `GET /health` | Liveness and Australian index status. |
+| `GET /v1/au/citations/{citation}` | Normalize and look up one Australian neutral citation. |
+| `GET /v1/au/index/metadata` | Index version, source, revision, licence and attribution. |
+| `GET /v1/au/index/stats` | Counts by court and year, date range and ambiguities. |
+
+See [the Australian API reference](docs/australian-api.md) and [self-hosting guide](docs/self-hosting.md).
 
 ## MCP Server
 
@@ -208,22 +231,44 @@ Set `CASELAW_GUARD_CACHE` to enable a persistent cache without passing `--cache`
 
 ### Australia
 
-The Australian adapter verifies neutral citations against a local JSON metadata index derived from sources such as the Open Australian Legal Corpus. A record should include a neutral citation and whatever authority metadata is available:
+The Australian adapter verifies neutral citations against a local JSON metadata index derived from the Open Australian Legal Corpus. Australian support is part of the base package: there is no `[au]` extra and no `openbench` dependency.
+
+The extractor and normalizer accept bracketed, parenthesised and bare years, case-insensitive court codes, extra whitespace and paragraph pinpoints. These inputs all look up `[1992] HCA 23`:
+
+```text
+[1992] HCA 23
+(1992) HCA 23
+1992 HCA 23
+[1992] hca 23 at [10]
+```
+
+Court codes may contain letters and numbers, including `FedCFamC1A`. Reported citations such as `(1992) 175 CLR 1` remain outside this Australian neutral-citation parser.
+
+The canonical index is a metadata object keyed by normalized citation:
 
 ```json
-[
-  {
-    "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
-    "normalized_citation": "[1992] HCA 23",
-    "case_name": "Mabo v Queensland (No 2)",
-    "court": "High Court of Australia",
-    "date": "1992-06-03",
-    "source_url": "https://eresources.hcourt.gov.au/showCase/1992/HCA/23"
+{
+  "index_version": "2026-08-01",
+  "dataset_revision": "DATASET_COMMIT",
+  "license": "CC-BY-4.0",
+  "record_count": 1,
+  "entries": {
+    "[1992] HCA 23": {
+      "normalized_citation": "[1992] HCA 23",
+      "case_name": "Mabo v Queensland (No 2)",
+      "court_code": "HCA",
+      "date": "1992-06-03",
+      "source_urls": ["https://eresources.hcourt.gov.au/showCase/1992/HCA/23"]
+    }
   }
-]
+}
 ```
 
 If more than one index row has the same `normalized_citation`, the adapter returns `ambiguous` and exposes each match in `candidates`.
+
+Every Australian result, including `not_found` and `unsupported_format`, carries the loaded index's provenance in `provider_metadata`. A legacy index reports `index_format: legacy` and marks unavailable provenance as `unknown`.
+
+The fixture and published index artifacts are CC-BY-4.0 data derived from the Open Australian Legal Corpus by Isaacus. See [DATA_SOURCES.md](DATA_SOURCES.md) and [LICENSE-DATA](LICENSE-DATA). The Python source remains Apache-2.0.
 
 ## Development
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from caselaw_guard.adapters import build_adapters
 from caselaw_guard.adapters.base import CitationAdapter, LookupResult
@@ -12,7 +12,9 @@ from caselaw_guard.models import CitationMatch, VerificationReport, Verification
 def verify_text(text: str, *, adapters: Sequence[CitationAdapter] | None = None) -> VerificationReport:
     active_adapters = list(adapters) if adapters is not None else build_adapters()
     results = [_verify_citation(citation, active_adapters) for citation in extract_citations(text)]
-    return VerificationReport(pass_=all(result.status == VerificationStatus.VERIFIED for result in results), results=results)
+    return VerificationReport(
+        pass_=all(result.status == VerificationStatus.VERIFIED for result in results), results=results
+    )
 
 
 def verify_file(path: str | Path, *, adapters: Sequence[CitationAdapter] | None = None) -> VerificationReport:

@@ -1,100 +1,87 @@
-# Release Checklist
+# Release checklist
 
-CaseLaw Guard v0.1 is intentionally narrow: citation existence verification only. Do not add proposition-support checks, good-law analysis, or new jurisdiction coverage as part of the release process.
+CaseLaw Guard 0.2.0 consolidates OpenBench's Australian citation-index code into
+one package. It does not add proposition-support checks, good-law analysis or a
+hosted citation API.
 
-## Local Validation
+Publishing the Python package, publishing an Australian index and archiving the
+OpenBench repository are three separate approval gates.
 
-Run from a clean checkout:
+## 1. Validate the source tree
+
+Run these checks from a clean checkout on Python 3.11, 3.12 and 3.13:
 
 ```bash
-.venv/bin/python -m pytest -q
-rm -rf dist
-.venv/bin/python -m build
-.venv/bin/python -m twine check dist/*
+python -m pytest -q
+python -m ruff check .
+python -m ruff format --check .
+python -m mypy
 ```
 
-Smoke test the built wheel in fresh virtual environments:
+Validate the attributed fixture against the canonical schema:
 
 ```bash
-set -euo pipefail
-
-WHEEL=$(.venv/bin/python - <<'PY'
+python - <<'PY'
+import json
 from pathlib import Path
 
-print(next(Path("dist").glob("caselaw_guard-*.whl")))
-PY
-)
+from jsonschema import Draft202012Validator, FormatChecker
 
-.venv/bin/python -m venv /tmp/caselaw-guard-base
-/tmp/caselaw-guard-base/bin/python -m pip install --upgrade pip
-/tmp/caselaw-guard-base/bin/python -m pip install "$WHEEL"
-/tmp/caselaw-guard-base/bin/caselaw-guard --help
-/tmp/caselaw-guard-base/bin/python - <<'PY'
-from caselaw_guard.verifier import verify_text
-
-report = verify_text("No citations here.")
-assert report.pass_ is True
-assert report.results == []
-PY
-
-.venv/bin/python -m venv /tmp/caselaw-guard-mcp
-/tmp/caselaw-guard-mcp/bin/python -m pip install --upgrade pip
-/tmp/caselaw-guard-mcp/bin/python -m pip install "${WHEEL}[mcp]"
-/tmp/caselaw-guard-mcp/bin/python - <<'PY'
-from importlib.metadata import entry_points
-
-scripts = {entry_point.name for entry_point in entry_points(group="console_scripts")}
-assert "caselaw-guard" in scripts
-assert "caselaw-guard-mcp" in scripts
-
-from caselaw_guard.mcp_server import create_mcp_server
-
-server = create_mcp_server()
-assert type(server).__name__ == "FastMCP"
+schema = json.loads(Path("schemas/australia-index.schema.json").read_text())
+fixture = json.loads(Path("examples/australia_index.sample.json").read_text())
+Draft202012Validator(schema, format_checker=FormatChecker()).validate(fixture)
 PY
 ```
 
-## GitHub Release
+## 2. Build and inspect the distributions
 
-For a new version, after validation:
-
-```bash
-git status --short
-git tag v0.1.2
-git push origin v0.1.2
-```
-
-Create the GitHub release from the version tag using the matching changelog entries.
-
-## PyPI Publishing
-
-Publishing is manual and uses PyPI Trusted Publishing with a dedicated GitHub environment named `pypi`, `id-token: write`, and `pypa/gh-action-pypi-publish@release/v1`.
-
-The PyPI project is configured to trust this GitHub Actions publisher:
-
-| Field | Value |
-| --- | --- |
-| PyPI project name | `caselaw-guard` |
-| Owner | `l0cka` |
-| Repository name | `caselaw-guard` |
-| Workflow name | `publish.yml` |
-| Environment name | `pypi` |
-
-Run the manual GitHub Actions workflow for the version tag:
+Build into a new, empty output directory:
 
 ```bash
-gh workflow run publish.yml -f ref=v0.1.2
-gh run watch
+python -m build --outdir dist-0.2.0
+python -m twine check dist-0.2.0/*
 ```
 
-Verify the package is available from PyPI:
+The package workflow performs the authoritative content check. Before
+publishing, confirm that:
+
+- the wheel contains `caselaw_guard`, not `openbench`;
+- its metadata has no `openbench` dependency;
+- the source distribution contains `LICENSE-DATA`, `DATA_SOURCES.md` and the
+  attributed fixture; and
+- a clean wheel installation verifies `[1992] HCA 23 at [10]` offline.
+
+## 3. Publish CaseLaw Guard 0.2.0
+
+After the validation and package workflows pass, create and push `v0.2.0`, then
+run the manual `publish.yml` workflow for that exact tag. PyPI Trusted
+Publishing uses the `pypi` GitHub environment.
+
+Verify a clean installation from PyPI:
 
 ```bash
-python3 -m pip index versions caselaw-guard
-python3 -m venv /tmp/caselaw-guard-pypi
-/tmp/caselaw-guard-pypi/bin/python -m pip install --upgrade pip
-/tmp/caselaw-guard-pypi/bin/python -m pip install "caselaw-guard[mcp]"
-/tmp/caselaw-guard-pypi/bin/caselaw-guard --help
+python3 -m venv /tmp/caselaw-guard-pypi-0.2.0
+/tmp/caselaw-guard-pypi-0.2.0/bin/python -m pip install "caselaw-guard[mcp]==0.2.0"
+/tmp/caselaw-guard-pypi-0.2.0/bin/caselaw-guard --help
 ```
 
-Do not publish from a ref that has not passed local validation.
+## 4. Publish an Australian index
+
+Run `publish-australian-index.yml` manually with an immutable source dataset
+revision, an index version and an index-specific release tag. The workflow
+builds and schema-validates the JSON, compresses it with Zstandard and publishes
+the JSON, `.zst` and SHA-256 files as release assets.
+
+Check the release metadata records:
+
+- the exact dataset revision, or `unknown` if one was not supplied;
+- `CC-BY-4.0` and the canonical Isaacus attribution;
+- the index and builder versions; and
+- a matching SHA-256 digest.
+
+## 5. OpenBench archive gate
+
+Do not archive OpenBench until the published 0.2.0 wheel and published index
+pass clean-install and offline-lookup checks. Archiving also requires separate
+approval and the migration notice described in the approved consolidation
+specification.

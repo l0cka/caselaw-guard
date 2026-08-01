@@ -26,7 +26,7 @@ def test_extract_neutral_citation_returns_court_code():
     assert neutral.court == "NSWCATAP"
 
 
-def test_evaluate_rows_counts_recognized_and_missing_court_codes():
+def test_evaluate_rows_recognizes_well_formed_unknown_court_codes():
     rows = [
         AusLawBenchmarkRow(
             instruction="Predict the case.",
@@ -50,17 +50,10 @@ def test_evaluate_rows_counts_recognized_and_missing_court_codes():
     assert report["total_rows"] == 3
     assert report["gold_citation_parse_count"] == 2
     assert report["gold_neutral_citation_count"] == 2
-    assert report["extractor_recognized_count"] == 1
-    assert report["extractor_recognition_rate"] == 0.5
-    assert report["missing_court_codes"] == [{"court": "XYZCA", "count": 1}]
-    assert report["missed_examples"] == [
-        {
-            "row_index": 2,
-            "gold_citation": "Collins v Urban [2014] XYZCA 17",
-            "neutral_citation": "[2014] XYZCA 17",
-            "court": "XYZCA",
-        }
-    ]
+    assert report["extractor_recognized_count"] == 2
+    assert report["extractor_recognition_rate"] == 1.0
+    assert report["missing_court_codes"] == []
+    assert report["missed_examples"] == []
 
 
 def test_evaluate_rows_without_au_index_keeps_extraction_only_report_shape():

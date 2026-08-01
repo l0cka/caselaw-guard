@@ -1,0 +1,89 @@
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+import pytest
+import zstandard as zstd
+
+from caselaw_guard.australia.models import ATTRIBUTION
+
+_SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "build_release_index.py"
+_SPEC = importlib.util.spec_from_file_location("build_release_index", _SCRIPT_PATH)
+assert _SPEC is not None and _SPEC.loader is not None
+build_release_index = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = build_release_index
+_SPEC.loader.exec_module(build_release_index)
+
+
+def test_sample_index_is_canonical_and_schema_valid() -> None:
+    sample = Path("examples/australia_index.sample.json")
+    build_release_index._validate(sample)
+    payload = json.loads(sample.read_text(encoding="utf-8"))
+    assert payload["dataset_revision"] == "unknown"
+    assert payload["attribution"] == ATTRIBUTION
+    assert payload["record_count"] == len(payload["entries"])
+
+
+def test_local_corpus_build_is_offline_and_records_supplied_revision(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    corpus = tmp_path / "corpus.jsonl"
+    output = tmp_path / "australian-index-test.json"
+    corpus.write_text(
+        json.dumps(
+            {
+                "type": "decision",
+                "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
+                "url": "https://example.test/mabo",
+                "id": "mabo",
+                "date": "1992-06-03",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(build_release_index, "_dataset_revision", _network_must_not_run)
+
+    build_release_index.main(
+        [
+            "--corpus",
+            str(corpus),
+            "--output",
+            str(output),
+            "--index-version",
+            "test-1",
+            "--dataset-revision",
+            "abc123",
+        ]
+    )
+
+    index = json.loads(output.read_text(encoding="utf-8"))
+    compressed = output.with_suffix(".json.zst")
+    checksums = output.with_suffix(".json.sha256")
+    assert index["dataset_revision"] == "abc123"
+    assert index["attribution"] == ATTRIBUTION
+    assert zstd.ZstdDecompressor().decompress(compressed.read_bytes()) == output.read_bytes()
+    assert checksums.read_text(encoding="utf-8").splitlines() == [
+        f"{hashlib.sha256(output.read_bytes()).hexdigest()}  {output.name}",
+        f"{hashlib.sha256(compressed.read_bytes()).hexdigest()}  {compressed.name}",
+    ]
+
+
+def test_local_corpus_without_revision_records_unknown(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    corpus = tmp_path / "corpus.jsonl"
+    output = tmp_path / "index.json"
+    corpus.write_text("", encoding="utf-8")
+    monkeypatch.setattr(build_release_index, "_dataset_revision", _network_must_not_run)
+
+    build_release_index.main(["--corpus", str(corpus), "--output", str(output), "--index-version", "test-unknown"])
+
+    assert json.loads(output.read_text(encoding="utf-8"))["dataset_revision"] == "unknown"
+
+
+def _network_must_not_run() -> str:
+    raise AssertionError("offline local-corpus builds must not resolve the remote dataset")

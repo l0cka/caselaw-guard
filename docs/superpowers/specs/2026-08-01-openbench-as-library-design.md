@@ -2,7 +2,7 @@
 
 **Date:** 1 August 2026
 
-**Status:** Draft for implementation review
+**Status:** Approved for implementation
 
 **Decision:** one repository and one Python distribution
 

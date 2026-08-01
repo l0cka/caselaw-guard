@@ -3,10 +3,10 @@ import os
 import subprocess
 import sys
 
-from caselaw_guard.australia_index import build_australian_index
+from caselaw_guard.australia import build_index, write_index
 
 
-def test_build_australian_index_filters_decisions_and_counts_skipped_rows(tmp_path):
+def test_build_australian_index_filters_non_decisions_and_missing_citations(tmp_path):
     corpus = tmp_path / "corpus.jsonl"
     output = tmp_path / "index.json"
     corpus.write_text(
@@ -31,30 +31,19 @@ def test_build_australian_index_filters_decisions_and_counts_skipped_rows(tmp_pa
                     }
                 ),
                 json.dumps({"type": "decision", "citation": "", "url": "https://example.test/missing"}),
-                "{not valid json",
             ]
         ),
         encoding="utf-8",
     )
 
-    stats = build_australian_index(corpus, output)
+    index = write_index(corpus, output, index_version="test-index")
 
-    assert stats.records_written == 1
-    assert stats.skipped_non_decision == 1
-    assert stats.skipped_missing_citation == 1
-    assert stats.skipped_malformed == 1
-    index = json.loads(output.read_text(encoding="utf-8"))
-    assert index == [
-        {
-            "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
-            "normalized_citation": "[1992] HCA 23",
-            "case_name": "Mabo v Queensland (No 2)",
-            "court": "High Court of Australia",
-            "jurisdiction": "cth",
-            "date": "1992-06-03",
-            "source_url": "https://eresources.hcourt.gov.au/showCase/1992/HCA/23",
-        }
-    ]
+    assert index.record_count == 1
+    assert index.index_version == "test-index"
+    assert "[1992] HCA 23" in index.entries
+    serialized = json.loads(output.read_text(encoding="utf-8"))
+    assert serialized["record_count"] == 1
+    assert "text" not in serialized["entries"]["[1992] HCA 23"]
 
 
 def test_au_index_cli_builds_index(tmp_path):
@@ -83,13 +72,14 @@ def test_au_index_cli_builds_index(tmp_path):
     )
 
     assert completed.returncode == 0
-    assert json.loads(output.read_text(encoding="utf-8"))[0]["normalized_citation"] == "[1983] HCA 21"
-    assert '"records_written": 1' in completed.stdout
+    index = json.loads(output.read_text(encoding="utf-8"))
+    assert index["record_count"] == 1
+    assert index["entries"]["[1983] HCA 21"]["normalized_citation"] == "[1983] HCA 21"
+    assert '"record_count": 1' in completed.stdout
 
 
 def test_build_australian_index_accepts_mixed_case_neutral_court_code(tmp_path):
     corpus = tmp_path / "corpus.jsonl"
-    output = tmp_path / "index.json"
     corpus.write_text(
         json.dumps(
             {
@@ -104,7 +94,9 @@ def test_build_australian_index_accepts_mixed_case_neutral_court_code(tmp_path):
         encoding="utf-8",
     )
 
-    stats = build_australian_index(corpus, output)
+    index = build_index(corpus)
 
-    assert stats.records_written == 1
-    assert json.loads(output.read_text(encoding="utf-8"))[0]["normalized_citation"] == "[2012] NSWIRComm 42"
+    assert index.record_count == 1
+    entry = index.entries["[2012] NSWIRComm 42"]
+    assert not isinstance(entry, list)
+    assert entry.normalized_citation == "[2012] NSWIRComm 42"

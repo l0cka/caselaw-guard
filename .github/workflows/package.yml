@@ -31,6 +31,33 @@ jobs:
       - name: Check package metadata
         run: python -m twine check dist/*
 
+      - name: Confirm distributions contain no OpenBench package or dependency
+        run: |
+          python - <<'PY'
+          from email.parser import BytesParser
+          from pathlib import Path, PurePosixPath
+          import tarfile
+          import zipfile
+
+          wheel = next(Path("dist").glob("caselaw_guard-*.whl"))
+          sdist = next(Path("dist").glob("caselaw_guard-*.tar.gz"))
+
+          with zipfile.ZipFile(wheel) as archive:
+              names = archive.namelist()
+              assert not any(PurePosixPath(name).parts[0] == "openbench" for name in names)
+              metadata_name = next(name for name in names if name.endswith(".dist-info/METADATA"))
+              metadata = BytesParser().parsebytes(archive.read(metadata_name))
+              requirements = metadata.get_all("Requires-Dist", [])
+              assert not any("openbench" in requirement.lower() for requirement in requirements)
+
+          with tarfile.open(sdist) as archive:
+              names = [member.name for member in archive.getmembers()]
+              assert not any("/openbench/" in name or name.endswith("/openbench") for name in names)
+              assert any(name.endswith("/examples/australia_index.sample.json") for name in names)
+              assert any(name.endswith("/LICENSE-DATA") for name in names)
+              assert any(name.endswith("/DATA_SOURCES.md") for name in names)
+          PY
+
       - name: Locate built wheel
         id: wheel
         run: |
@@ -49,11 +76,24 @@ jobs:
           /tmp/caselaw-guard-base/bin/python -m pip install "${{ steps.wheel.outputs.path }}"
           /tmp/caselaw-guard-base/bin/caselaw-guard --help
           /tmp/caselaw-guard-base/bin/python - <<'PY'
+          from pathlib import Path
+
+          from caselaw_guard.adapters.australia import AustralianCorpusAdapter
           from caselaw_guard.verifier import verify_text
 
           report = verify_text("No citations here.")
           assert report.pass_ is True
           assert report.results == []
+
+          fixture = Path("examples/australia_index.sample.json").resolve()
+          australian = verify_text(
+              "[1992] HCA 23 at [10]",
+              adapters=[AustralianCorpusAdapter(fixture)],
+          )
+          assert australian.pass_ is True
+          assert len(australian.results) == 1
+          assert australian.results[0].status.value == "verified"
+          assert australian.results[0].provider_metadata["attribution"]
           PY
 
       - name: Smoke test MCP extra

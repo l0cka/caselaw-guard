@@ -9,7 +9,6 @@ from fastapi.testclient import TestClient
 from caselaw_guard.adapters.australia import AustralianCorpusAdapter
 from caselaw_guard.api import create_app
 
-
 FIXTURE_INDEX = Path(__file__).parent / "fixtures" / "australia_index.json"
 
 

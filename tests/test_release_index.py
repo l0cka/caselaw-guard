@@ -5,6 +5,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 import zstandard as zstd
@@ -83,6 +84,50 @@ def test_local_corpus_without_revision_records_unknown(tmp_path: Path, monkeypat
     build_release_index.main(["--corpus", str(corpus), "--output", str(output), "--index-version", "test-unknown"])
 
     assert json.loads(output.read_text(encoding="utf-8"))["dataset_revision"] == "unknown"
+
+
+def test_remote_build_streams_the_corpus_split_at_the_supplied_revision(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_load_dataset(dataset: str, **kwargs: object) -> list[dict[str, object]]:
+        calls.append((dataset, kwargs))
+        return [
+            {
+                "type": "decision",
+                "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
+                "url": "https://example.test/mabo",
+                "id": "mabo",
+                "date": "1992-06-03T00:00:00Z",
+                "jurisdiction": "cth",
+            },
+            {"type": "legislation", "citation": "Privacy Act 1988 (Cth)"},
+        ]
+
+    datasets = ModuleType("datasets")
+    datasets.load_dataset = fake_load_dataset  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "datasets", datasets)
+    output = tmp_path / "corpus.jsonl"
+
+    count = build_release_index._stream_decisions_to_jsonl(output, revision="abc123")
+
+    assert calls == [
+        (
+            build_release_index.DATASET,
+            {"split": "corpus", "streaming": True, "revision": "abc123"},
+        )
+    ]
+    assert count == 1
+    assert json.loads(output.read_text(encoding="utf-8")) == {
+        "type": "decision",
+        "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
+        "url": "https://example.test/mabo",
+        "date": "1992-06-03",
+        "jurisdiction": "cth",
+        "id": "mabo",
+    }
 
 
 def _network_must_not_run() -> str:

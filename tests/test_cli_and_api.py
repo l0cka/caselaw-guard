@@ -43,6 +43,7 @@ def test_api_returns_pass_flag_and_results_with_injected_adapters():
     app = create_app(adapters=[AustralianCorpusAdapter(index_path=FIXTURE_INDEX)])
     client = TestClient(app)
 
+    assert app.version == "0.3.0"
     response = client.post("/verify", json={"text": "Known: [1992] HCA 23."})
 
     assert response.status_code == 200

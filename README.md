@@ -23,8 +23,32 @@ python3 -m pip install caselaw-guard
 For local agent or MCP use:
 
 ```bash
-python3 -m pip install "caselaw-guard[mcp]"
+python3 -m pip install "caselaw-guard[mcp]==0.3.0"
 ```
+
+## Australian five-minute setup
+
+Install the package, fetch an explicit verified index release, and verify a
+citation offline:
+
+```bash
+python3 -m pip install "caselaw-guard[mcp]==0.3.0"
+caselaw-guard au-index fetch 2026-08-01 --output australia-index.json
+printf '[2014] HCA 9 at [10]\n' \
+  | caselaw-guard verify - --no-courtlistener --au-index australia-index.json
+caselaw-guard-mcp
+```
+
+`au-index fetch` accepts only an explicit `YYYY-MM-DD` release version. It
+downloads the compressed index and checksum manifest from this repository,
+streams and verifies both assets, validates the canonical provenance, and
+replaces the output atomically. Checksums protect asset integrity in transit;
+they do not protect against a compromised repository or release account.
+
+The approved full-index coverage report for `australian-index-2026-08-01` is
+the [AusLaw citation coverage report](benchmarks/reports/australian-index-2026-08-01.json).
+It measures extraction and existence in one dated index snapshot, not legal
+proposition support, good-law status or ongoing source completeness.
 
 ## Quickstart
 
@@ -92,7 +116,12 @@ caselaw-guard au-index stats data/australia-index.json
 caselaw-guard au-index migrate legacy-index.json --output canonical-index.json
 ```
 
-Version 0.2.0 reads canonical and legacy indexes. New builds always use the canonical format; legacy support is transitional and has no scheduled removal version.
+Version 0.3.0 reads canonical and legacy indexes. New builds always use the canonical format; legacy support is transitional and has no scheduled removal version.
+
+To update an installed index, fetch the new explicit version with `--force`
+after reviewing its provenance. The command verifies everything before
+replacement. To roll back, point `CASELAW_GUARD_AU_INDEX` at a previously
+verified index file; indexes are not updated automatically.
 
 ## REST API
 
@@ -156,6 +185,9 @@ caselaw-guard-mcp
 ```
 
 The server exposes one tool, `verify_case_law_text`, which accepts `text` and returns the same JSON report shape as the CLI and REST API.
+
+The MCP extra uses Python SDK v2. It supports modern `2026-07-28` sessions and
+earlier 2025-era protocol clients through the same stdio server and tool.
 
 For agent configuration, prefer an absolute path to the installed script so the agent does not depend on shell startup files or `PATH` inheritance. In a local checkout, that path is typically:
 
@@ -268,7 +300,7 @@ If more than one index row has the same `normalized_citation`, the adapter retur
 
 Every Australian result, including `not_found` and `unsupported_format`, carries the loaded index's provenance in `provider_metadata`. A legacy index reports `index_format: legacy` and marks unavailable provenance as `unknown`.
 
-The fixture and published index artifacts are CC-BY-4.0 data derived from the Open Australian Legal Corpus by Isaacus. See [DATA_SOURCES.md](DATA_SOURCES.md) and [LICENSE-DATA](LICENSE-DATA). The Python source remains Apache-2.0.
+The fixture and published index artifacts are CC-BY-4.0 data derived from the Open Australian Legal Corpus by Isaacus. See [DATA_SOURCES.md](DATA_SOURCES.md), the [approved coverage report](benchmarks/reports/australian-index-2026-08-01.json) and [LICENSE-DATA](LICENSE-DATA). The Python source remains Apache-2.0.
 
 ## Development
 

@@ -48,6 +48,17 @@ digest and licence in each report. The benchmark measures citation extraction
 and snapshot verification; it does not measure proposition support or whether
 a case remains good law.
 
+The approved full-index report for `australian-index-2026-08-01` is
+[`benchmarks/reports/australian-index-2026-08-01.json`](benchmarks/reports/australian-index-2026-08-01.json).
+It records 1,000 benchmark rows evaluated against the published 183,804-entry
+index and preserves the exact index revision and per-row outcomes. A passing
+report is evidence about that index snapshot, not a guarantee that later source
+updates contain the same authorities or that a citation supports a proposition.
+
+The index fetch command verifies the published SHA-256 manifest and canonical
+metadata before atomic installation. Checksums establish asset integrity; they
+do not establish that the repository or release account itself was uncompromised.
+
 ## Limits
 
 The Australian index is a snapshot of its configured source. A `not_found`

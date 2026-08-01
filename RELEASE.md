@@ -53,8 +53,14 @@ publishing, confirm that:
   `mcp>=2,<3`;
 - the source distribution contains `LICENSE-DATA`, `DATA_SOURCES.md` and the
   attributed fixture; and
-- a clean wheel installation fetches an explicit index version and verifies
-  `[2014] HCA 9 at [10]` offline.
+- a clean wheel installation fetches an explicit index version, verifies both
+  SHA-256 assets and verifies `[2014] HCA 9 at [10]` offline.
+
+The fetch command only accepts an explicit `YYYY-MM-DD` index version. It
+refuses a pre-existing output unless `--force` is supplied, refuses symbolic
+links, and preserves the existing file until every download, digest,
+decompression, schema and provenance check passes. Checksums protect asset
+integrity, not compromise of the repository or release account.
 
 ## 3. Publish CaseLaw Guard 0.3.0
 

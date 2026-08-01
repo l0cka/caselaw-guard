@@ -4,6 +4,12 @@ CaseLaw Guard exposes Australian citation lookup from the same FastAPI
 application as `POST /verify`. The service is read-only and uses the local file
 configured by `CASELAW_GUARD_AU_INDEX`.
 
+CaseLaw Guard 0.3.0 keeps the REST response shapes unchanged. Install a
+versioned index with `caselaw-guard au-index fetch VERSION --output PATH`, or
+continue loading a locally built canonical index and supported legacy index.
+The fetch command verifies the release assets before they become available to
+the API.
+
 ## Health
 
 `GET /health` always returns `200`:

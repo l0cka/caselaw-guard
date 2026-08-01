@@ -5,13 +5,20 @@ index and optional CourtListener cache.
 
 ## 1. Get an index
 
-Download a versioned `australian-index-<version>.json.zst` release asset and
-verify it against the published SHA-256 file before decompressing it:
+Fetch an explicit version with the package command. It verifies the compressed
+asset and JSON digest, canonical schema and Isaacus attribution before the
+output is replaced:
 
 ```bash
-zstd -d australian-index-2026-08-01.json.zst \
-  -o australian-index-2026-08-01.json
+caselaw-guard au-index fetch 2026-08-01 --output australian-index.json
 ```
+
+The command refuses an existing output unless `--force` is supplied, refuses
+symbolic links, keeps temporary files beside the output, and leaves an
+existing valid index untouched if any check fails. It uses only the fixed
+GitHub release URLs derived from the requested `YYYY-MM-DD` version. Checksums
+protect release-asset integrity, not a compromised repository or release
+account.
 
 Alternatively, build a canonical index from a local Open Australian Legal
 Corpus JSONL export:
@@ -38,16 +45,23 @@ citation verification.
 
 ## 3. Monitor and update
 
-Monitor `GET /health` and alert when `index_loaded` is `false`. Validate a new
-file with `caselaw-guard au-index stats`, replace the configured file and
-restart the process. Version 0.2.0 does not hot-reload indexes.
+Monitor `GET /health` and alert when `index_loaded` is `false`. Fetch a new
+explicit version with `--force`, validate the installed file with
+`caselaw-guard au-index stats`, and restart the process. Version 0.3.0 does
+not hot-reload indexes.
+
+To roll back, point `CASELAW_GUARD_AU_INDEX` at a previously verified index
+file and restart the process. Do not mutate a historical index in place.
 
 ## 4. Preserve attribution
 
 The fixture and full Australian index artifacts are CC-BY-4.0 data derived from
 the Open Australian Legal Corpus by Isaacus. Keep `LICENSE-DATA` and the
 canonical attribution with every redistribution. The API includes it in every
-Australian lookup response and the metadata route.
+Australian lookup response and the metadata route. The approved
+[2026-08-01 coverage report](../benchmarks/reports/australian-index-2026-08-01.json)
+documents the benchmark's snapshot limits; a `not_found` result does not prove
+that a case does not exist.
 
 This service is not an official court or government source and does not provide
-legal advice. A `not_found` result is not proof that a case does not exist.
+legal advice.

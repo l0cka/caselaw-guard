@@ -4,6 +4,17 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+## 0.3.0 — 2026-08-02
+
+- Added a pinned AusLaw citation benchmark, approved full-index baseline and
+  fail-closed coverage gate for future Australian index releases.
+- Migrated the optional MCP integration to Python SDK v2 while preserving the
+  `verify_case_law_text` tool and public verification report.
+- Added `caselaw-guard au-index fetch VERSION --output PATH` for explicit,
+  checksum-verified, size-bounded and atomic Australian index installation.
+- Documented the 0.3.0 install, update, rollback, provenance and coverage
+  limits without adding automatic index updates or legal analysis.
+
 ## 0.2.0 — 2026-08-01
 
 - Consolidated OpenBench's Australian citation lookup, index builder and data

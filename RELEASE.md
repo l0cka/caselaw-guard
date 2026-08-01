@@ -1,11 +1,14 @@
 # Release checklist
 
-CaseLaw Guard 0.2.0 consolidates OpenBench's Australian citation-index code into
-one package. It does not add proposition-support checks, good-law analysis or a
-hosted citation API.
+CaseLaw Guard 0.3.0 remains a citation-existence verifier. It adds reproducible
+Australian coverage evidence, MCP Python SDK v2 support and explicit fetching of
+versioned Australian indexes. It does not add proposition-support checks,
+good-law analysis or a hosted citation API.
 
-Publishing the Python package, publishing an Australian index and archiving the
-OpenBench repository are three separate approval gates.
+Publishing the Python package and publishing an Australian index are separate
+approval gates. GitHub's “Latest” marker belongs to the package release and
+must not be moved by an index release. OpenBench archival is outside this
+release's scope.
 
 ## 1. Validate the source tree
 
@@ -38,50 +41,68 @@ PY
 Build into a new, empty output directory:
 
 ```bash
-python -m build --outdir dist-0.2.0
-python -m twine check dist-0.2.0/*
+python -m build --outdir dist-0.3.0
+python -m twine check dist-0.3.0/*
 ```
 
 The package workflow performs the authoritative content check. Before
 publishing, confirm that:
 
 - the wheel contains `caselaw_guard`, not `openbench`;
-- its metadata has no `openbench` dependency;
+- its metadata has no `openbench` dependency and the MCP extra requires
+  `mcp>=2,<3`;
 - the source distribution contains `LICENSE-DATA`, `DATA_SOURCES.md` and the
   attributed fixture; and
-- a clean wheel installation verifies `[1992] HCA 23 at [10]` offline.
+- a clean wheel installation fetches an explicit index version, verifies both
+  SHA-256 assets and verifies `[2014] HCA 9 at [10]` offline.
 
-## 3. Publish CaseLaw Guard 0.2.0
+The fetch command only accepts an explicit `YYYY-MM-DD` index version. It
+refuses a pre-existing output unless `--force` is supplied, refuses symbolic
+links, and preserves the existing file until every download, digest,
+decompression, schema and provenance check passes. Checksums protect asset
+integrity, not compromise of the repository or release account.
 
-After the validation and package workflows pass, create and push `v0.2.0`, then
-run the manual `publish.yml` workflow for that exact tag. PyPI Trusted
-Publishing uses the `pypi` GitHub environment.
+## 3. Publish CaseLaw Guard 0.3.0
+
+After the validation and package workflows pass, present the exact tag, commit,
+release notes and PyPI effect for approval. Only after approval, create and push
+`v0.3.0`, run the manual `publish.yml` workflow for that exact tag, and mark
+the GitHub package release as “Latest”. PyPI Trusted Publishing uses the `pypi`
+GitHub environment.
 
 Verify a clean installation from PyPI:
 
 ```bash
-python3 -m venv /tmp/caselaw-guard-pypi-0.2.0
-/tmp/caselaw-guard-pypi-0.2.0/bin/python -m pip install "caselaw-guard[mcp]==0.2.0"
-/tmp/caselaw-guard-pypi-0.2.0/bin/caselaw-guard --help
+python3 -m venv /tmp/caselaw-guard-pypi-0.3.0
+/tmp/caselaw-guard-pypi-0.3.0/bin/python -m pip install "caselaw-guard[mcp]==0.3.0"
+/tmp/caselaw-guard-pypi-0.3.0/bin/caselaw-guard --help
 ```
 
 ## 4. Publish an Australian index
 
-Run `publish-australian-index.yml` manually with an immutable source dataset
-revision, an index version and an index-specific release tag. The workflow
-builds and schema-validates the JSON, compresses it with Zstandard and publishes
-the JSON, `.zst` and SHA-256 files as release assets.
+Run `publish-australian-index.yml` manually only after its pinned benchmark
+passes against the newly built index and matches the approved baseline. This is
+a separate explicit approval from package publication. Use an immutable source
+dataset revision, an index version and an index-specific release tag. The
+workflow builds and schema-validates the JSON, produces the verification report,
+compresses it with Zstandard and publishes the JSON, `.zst`, report and SHA-256
+files as release assets.
 
 Check the release metadata records:
 
 - the exact dataset revision, or `unknown` if one was not supplied;
 - `CC-BY-4.0` and the canonical Isaacus attribution;
 - the index and builder versions; and
-- a matching SHA-256 digest.
+- a matching SHA-256 digest; and
+- the exact benchmark dataset revision and approved baseline comparison.
 
-## 5. OpenBench archive gate
+## 5. Rollback and scope controls
 
-Do not archive OpenBench until the published 0.2.0 wheel and published index
-pass clean-install and offline-lookup checks. Archiving also requires separate
-approval and the migration notice described in the approved consolidation
-specification.
+Failed index fetches must preserve the existing output. Users can roll back by
+pointing `CASELAW_GUARD_AU_INDEX` at a previously verified index file. Do not
+rewrite or delete a published package or mutate a verified historical index;
+publish a new version with its own evidence instead.
+
+Do not add reported-citation aliases, proposition-support checks, good-law
+analysis, new jurisdictions, hosted services, telemetry or automatic index
+updates as part of this release.

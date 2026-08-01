@@ -31,6 +31,34 @@ Each index redistribution must include:
 CaseLaw Guard embeds the same statement in index metadata and Australian lookup
 results.
 
+## AusLaw Citation Benchmark
+
+The reproducible coverage harness uses the `test` split of
+[auslawbench/AusLaw-Citation-Benchmark](https://huggingface.co/datasets/auslawbench/AusLaw-Citation-Benchmark).
+
+- **Licence:** [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- **Rows:** 1,000
+- **Revision:** `fabee289f2a5bbfb3c6476be55084abe426f6f18`
+- **File:** `roc_test.json`
+- **SHA-256:** `154d272792778df49c01814d9e864121fcca3828df5f23c6ace90e992effb005`
+
+The harness downloads the file from that immutable revision, verifies the
+digest before caching it, and records the dataset, split, revision, file,
+digest and licence in each report. The benchmark measures citation extraction
+and snapshot verification; it does not measure proposition support or whether
+a case remains good law.
+
+The approved full-index report for `australian-index-2026-08-01` is
+[`benchmarks/reports/australian-index-2026-08-01.json`](benchmarks/reports/australian-index-2026-08-01.json).
+It records 1,000 benchmark rows evaluated against the published 183,804-entry
+index and preserves the exact index revision and per-row outcomes. A passing
+report is evidence about that index snapshot, not a guarantee that later source
+updates contain the same authorities or that a citation supports a proposition.
+
+The index fetch command verifies the published SHA-256 manifest and canonical
+metadata before atomic installation. Checksums establish asset integrity; they
+do not establish that the repository or release account itself was uncompromised.
+
 ## Limits
 
 The Australian index is a snapshot of its configured source. A `not_found`

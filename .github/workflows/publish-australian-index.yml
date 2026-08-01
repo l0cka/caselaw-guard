@@ -39,7 +39,7 @@ jobs:
       - name: Install package and release dependencies
         run: python -m pip install ".[dev,release]"
 
-      - name: Build and validate index
+      - name: Build, validate and run pinned coverage gate
         env:
           INDEX_VERSION: ${{ inputs.index_version }}
           DATASET_REVISION: ${{ inputs.dataset_revision }}
@@ -51,6 +51,10 @@ jobs:
           if [ -n "${DATASET_REVISION}" ]; then
             args+=(--dataset-revision "${DATASET_REVISION}")
           fi
+          args+=(
+            --coverage-baseline benchmarks/auslaw-citation-baseline.json
+            --verification-report "australian-index-${INDEX_VERSION}.verification.json"
+          )
           python scripts/build_release_index.py "${args[@]}"
 
       - name: Upload workflow artifact

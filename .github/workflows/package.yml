@@ -114,8 +114,36 @@ jobs:
           assert (bin_dir / "caselaw-guard").exists()
           assert (bin_dir / "caselaw-guard-mcp").exists()
 
-          from caselaw_guard.mcp_server import create_mcp_server
+          import asyncio
+          import json
+          import os
 
-          server = create_mcp_server()
-          assert type(server).__name__ == "FastMCP"
+          from mcp import Client
+          from mcp.client.stdio import StdioServerParameters, stdio_client
+
+          async def smoke(mode):
+              parameters = StdioServerParameters(
+                  command=str(bin_dir / "caselaw-guard-mcp"),
+                  env=os.environ.copy(),
+              )
+              async with Client(stdio_client(parameters), mode=mode) as client:
+                  tools = await client.list_tools()
+                  result = await client.call_tool(
+                      "verify_case_law_text",
+                      {"text": "No citations here."},
+                  )
+                  if result.structured_content is not None:
+                      payload = result.structured_content
+                  else:
+                      assert result.content
+                      payload = json.loads(result.content[0].text)
+                  assert [tool.name for tool in tools.tools] == ["verify_case_law_text"]
+                  assert payload == {"pass": True, "results": []}
+                  if mode == "legacy":
+                      assert client.protocol_version.startswith("2025-")
+                  else:
+                      assert client.protocol_version == mode
+
+          asyncio.run(smoke("2026-07-28"))
+          asyncio.run(smoke("legacy"))
           PY

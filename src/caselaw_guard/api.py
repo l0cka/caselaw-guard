@@ -45,7 +45,7 @@ def create_app(
 
     app = FastAPI(
         title="CaseLaw Guard",
-        version="0.2.0",
+        version="0.3.0",
         description="Fail-closed case-law citation existence verification.",
     )
 

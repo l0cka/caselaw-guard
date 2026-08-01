@@ -193,7 +193,7 @@ def _canonical_index() -> dict[str, object]:
     return {
         "index_version": "acceptance-1",
         "generated_at": "2026-08-01T00:00:00Z",
-        "builder_version": "0.2.0",
+        "builder_version": "0.3.0",
         "source": "open-australian-legal-corpus",
         "dataset_revision": "abc123",
         "license": "CC-BY-4.0",

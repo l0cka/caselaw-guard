@@ -9,6 +9,7 @@ import typer
 
 from caselaw_guard.adapters import build_adapters
 from caselaw_guard.australia.index_builder import migrate_index, write_index
+from caselaw_guard.australia.index_fetcher import IndexFetchError, fetch_index
 from caselaw_guard.australia.index_store import IndexStore
 from caselaw_guard.verifier import verify_text
 
@@ -91,6 +92,20 @@ def build_au_index(
         dataset_revision=dataset_revision,
     )
     typer.echo(json.dumps(index.model_dump(mode="json", exclude={"entries"}), indent=2))
+
+
+@au_index_app.command("fetch")
+def fetch_au_index(
+    version: Annotated[str, typer.Argument(help="Explicit Australian index version in YYYY-MM-DD format.")],
+    output: Annotated[Path, typer.Option("--output", "-o", help="Path for the installed Australian index JSON.")],
+    force: Annotated[bool, typer.Option("--force", help="Replace an existing regular index file.")] = False,
+) -> None:
+    try:
+        result = fetch_index(version, output, force=force)
+    except IndexFetchError as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(code=1) from error
+    typer.echo(json.dumps(result.as_dict(), indent=2))
 
 
 @au_index_app.command("stats")

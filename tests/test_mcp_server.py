@@ -9,7 +9,6 @@ import caselaw_guard.mcp_server as mcp_server
 from caselaw_guard.adapters.australia import AustralianCorpusAdapter
 from caselaw_guard.mcp_server import verify_case_law_text
 
-
 FIXTURE_INDEX = Path(__file__).parent / "fixtures" / "australia_index.json"
 
 

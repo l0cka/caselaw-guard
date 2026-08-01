@@ -6,7 +6,6 @@ from caselaw_guard.adapters.australia import AustralianCorpusAdapter
 from caselaw_guard.adapters.courtlistener import CourtListenerAdapter
 from caselaw_guard.models import CitationMatch, VerificationStatus
 
-
 FIXTURE_INDEX = "tests/fixtures/australia_index.json"
 
 
@@ -139,9 +138,7 @@ def test_courtlistener_adapter_exposes_ambiguous_candidates():
 
 def test_courtlistener_adapter_maps_http_429_with_provider_metadata():
     client = httpx.Client(
-        transport=httpx.MockTransport(
-            lambda request: httpx.Response(429, json={"wait_until": "2026-05-01T00:01:00Z"})
-        )
+        transport=httpx.MockTransport(lambda request: httpx.Response(429, json={"wait_until": "2026-05-01T00:01:00Z"}))
     )
     adapter = CourtListenerAdapter(api_token="test-token", client=client)
 

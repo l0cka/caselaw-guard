@@ -1,10 +1,26 @@
-[
-  {
-    "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
-    "normalized_citation": "[1992] HCA 23",
-    "case_name": "Mabo v Queensland (No 2)",
-    "court": "High Court of Australia",
-    "date": "1992-06-03",
-    "source_url": "https://eresources.hcourt.gov.au/showCase/1992/HCA/23"
+{
+  "index_version": "sample-2026-08-01",
+  "generated_at": "2026-08-01T00:00:00Z",
+  "builder_version": "0.2.0",
+  "source": "open-australian-legal-corpus",
+  "dataset_revision": "unknown",
+  "license": "CC-BY-4.0",
+  "attribution": "Open Australian Legal Corpus by Isaacus, CC-BY-4.0, modified by CaseLaw Guard (metadata extraction, normalisation and deduplication).",
+  "record_count": 1,
+  "entries": {
+    "[1992] HCA 23": {
+      "normalized_citation": "[1992] HCA 23",
+      "citation": "Mabo v Queensland (No 2) [1992] HCA 23",
+      "case_name": "Mabo v Queensland (No 2)",
+      "court": "High Court of Australia",
+      "court_code": "HCA",
+      "jurisdiction": "cth",
+      "date": "1992-06-03",
+      "source_urls": ["https://eresources.hcourt.gov.au/showCase/1992/HCA/23"],
+      "source": "open-australian-legal-corpus",
+      "source_record_ids": ["sample-mabo-1992-hca-23"],
+      "indexed_at": "2026-08-01",
+      "license": "CC-BY-4.0"
+    }
   }
-]
+}

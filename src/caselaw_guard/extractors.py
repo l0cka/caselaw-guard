@@ -6,47 +6,14 @@ from eyecite import get_citations
 
 from caselaw_guard.models import CitationMatch
 
-
-AU_NEUTRAL_COURTS = {
-    "HCA",
-    "FCA",
-    "FCAFC",
-    "FCCA",
-    "FCFCOA",
-    "NSWCA",
-    "NSWCCA",
-    "NSWSC",
-    "NSWDC",
-    "NSWCAT",
-    "NSWCATAP",
-    "NSWCATAD",
-    "NSWCATOD",
-    "NSWCATEN",
-    "NSWLEC",
-    "NSWADT",
-    "NSWADTAP",
-    "NSWIRComm",
-    "NSWMT",
-    "VCA",
-    "VSCA",
-    "VSC",
-    "QCA",
-    "QSC",
-    "QDC",
-    "WASCA",
-    "WASC",
-    "SASC",
-    "SASCA",
-    "TASSC",
-    "ACTSC",
-    "NTSC",
-    "AATA",
-    "ART",
-    "FWC",
-}
-
 AU_NEUTRAL_RE = re.compile(
-    r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Za-z][A-Za-z0-9]{1,12})\s+(?P<number>\d{1,5})"
+    r"""(?<![A-Za-z0-9])
+    (?:\[(?P<bracket_year>\d{4})\]|\((?P<paren_year>\d{4})\)|(?P<bare_year>\d{4}))
+    \s+(?P<court>[A-Za-z][A-Za-z0-9]*)\s+(?P<number>\d+)
+    (?:\s+(?:at\s+)?\[\d+\]|\s*,\s*\[\d+\])?
+    (?![A-Za-z0-9_])
+    """,
+    re.VERBOSE | re.IGNORECASE,
 )
 
 
@@ -77,12 +44,18 @@ def extract_citations(text: str) -> list[CitationMatch]:
         seen.add(key)
 
     for match in AU_NEUTRAL_RE.finditer(text):
-        court = match.group("court")
         matched_text = match.group(0)
         start_index, end_index = match.span()
         key = (start_index, end_index, matched_text)
-        if court not in AU_NEUTRAL_COURTS or key in seen:
+        if key in seen:
             continue
+
+        year = match.group("bracket_year") or match.group("paren_year") or match.group("bare_year")
+        groups = {
+            "year": year,
+            "court": match.group("court"),
+            "number": match.group("number"),
+        }
 
         matches.append(
             CitationMatch(
@@ -90,7 +63,7 @@ def extract_citations(text: str) -> list[CitationMatch]:
                 start_index=start_index,
                 end_index=end_index,
                 jurisdiction_guess="au",
-                groups=match.groupdict(),
+                groups=groups,
             )
         )
         seen.add(key)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +11,6 @@ import httpx
 
 from caselaw_guard.adapters.base import CitationAdapter, LookupResult
 from caselaw_guard.models import Authority, CitationMatch, VerificationStatus
-
 
 CITATION_RE = re.compile(r"^(?P<volume>\d+)\s+(?P<reporter>.+?)\s+(?P<page>\d+[A-Za-z]?)$")
 
@@ -176,6 +175,8 @@ class CourtListenerAdapter(CitationAdapter):
 
     @staticmethod
     def _status_from_code(status_code: int | str | None) -> VerificationStatus:
+        if status_code is None:
+            return VerificationStatus.PROVIDER_ERROR
         try:
             code = int(status_code)
         except (TypeError, ValueError):
@@ -220,7 +221,7 @@ class CourtListenerAdapter(CitationAdapter):
             return None
 
         cached_at = self._parse_cached_at(entry.get("cached_at"))
-        if not cached_at or datetime.now(timezone.utc) - cached_at >= self.cache_ttl:
+        if not cached_at or datetime.now(UTC) - cached_at >= self.cache_ttl:
             return None
 
         result = entry.get("result")
@@ -234,7 +235,7 @@ class CourtListenerAdapter(CitationAdapter):
 
         cache = self._read_cache()
         cache[cache_key] = {
-            "cached_at": datetime.now(timezone.utc).isoformat(),
+            "cached_at": datetime.now(UTC).isoformat(),
             "result": self._lookup_result_to_cache(result),
         }
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -258,7 +259,7 @@ class CourtListenerAdapter(CitationAdapter):
         except ValueError:
             return None
         if parsed.tzinfo is None:
-            return parsed.replace(tzinfo=timezone.utc)
+            return parsed.replace(tzinfo=UTC)
         return parsed
 
     @staticmethod
@@ -283,6 +284,10 @@ class CourtListenerAdapter(CitationAdapter):
 
         authority = data.get("authority")
         candidates = data.get("candidates") or []
+        metadata = data.get("provider_metadata")
+        provider_metadata: dict[str, object] = (
+            {str(key): value for key, value in metadata.items()} if isinstance(metadata, dict) else {}
+        )
         return LookupResult(
             status=status,
             normalized_citation=data.get("normalized_citation"),
@@ -290,8 +295,6 @@ class CourtListenerAdapter(CitationAdapter):
             source_url=data.get("source_url"),
             confidence=float(data.get("confidence") or 0.0),
             error_message=data.get("error_message"),
-            candidates=[
-                Authority.model_validate(candidate) for candidate in candidates if isinstance(candidate, dict)
-            ],
-            provider_metadata=data.get("provider_metadata") if isinstance(data.get("provider_metadata"), dict) else {},
+            candidates=[Authority.model_validate(candidate) for candidate in candidates if isinstance(candidate, dict)],
+            provider_metadata=provider_metadata,
         )

@@ -4,7 +4,6 @@ from caselaw_guard import verify_text
 from caselaw_guard.adapters.australia import AustralianCorpusAdapter
 from caselaw_guard.models import VerificationStatus
 
-
 FIXTURE_INDEX = Path(__file__).parent / "fixtures" / "australia_index.json"
 
 
@@ -93,7 +92,9 @@ def test_australian_adapter_normalizes_whitespace(tmp_path):
         encoding="utf-8",
     )
 
-    report = verify_text("Mabo v Queensland (No 2) [1992] HCA 23.", adapters=[AustralianCorpusAdapter(index_path=index)])
+    report = verify_text(
+        "Mabo v Queensland (No 2) [1992] HCA 23.", adapters=[AustralianCorpusAdapter(index_path=index)]
+    )
 
     assert report.pass_ is True
     assert report.results[0].normalized_citation == "[1992] HCA 23"

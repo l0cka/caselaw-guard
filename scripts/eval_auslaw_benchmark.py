@@ -14,13 +14,10 @@ from caselaw_guard.extractors import extract_citations
 from caselaw_guard.models import VerificationStatus
 from caselaw_guard.verifier import verify_text
 
-
 BENCHMARK_URL = "https://huggingface.co/datasets/auslawbench/AusLaw-Citation-Benchmark/raw/main/roc_test.json"
 DEFAULT_CACHE_PATH = Path(".cache/caselaw-guard/auslaw-citation-benchmark/roc_test.json")
 ANGLE_CITATION_RE = re.compile(r"<([^<>]+)>")
-NEUTRAL_CITATION_RE = re.compile(
-    r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Za-z][A-Za-z0-9]{1,12})\s+(?P<number>\d{1,5})"
-)
+NEUTRAL_CITATION_RE = re.compile(r"\[(?P<year>\d{4})\]\s+(?P<court>[A-Za-z][A-Za-z0-9]{1,12})\s+(?P<number>\d{1,5})")
 
 
 @dataclass(frozen=True)
@@ -77,7 +74,9 @@ def evaluate_rows(
             extractor_recognized_count += 1
             if adapter is not None:
                 report = verify_text(gold_citation, adapters=[adapter])
-                status = report.results[0].status.value if report.results else VerificationStatus.UNSUPPORTED_FORMAT.value
+                status = (
+                    report.results[0].status.value if report.results else VerificationStatus.UNSUPPORTED_FORMAT.value
+                )
                 verification_statuses[status] += 1
                 if status != VerificationStatus.VERIFIED.value and len(verification_missed_examples) < max_examples:
                     verification_missed_examples.append(
@@ -102,9 +101,7 @@ def evaluate_rows(
                 }
             )
 
-    recognition_rate = (
-        extractor_recognized_count / gold_neutral_citation_count if gold_neutral_citation_count else 0.0
-    )
+    recognition_rate = extractor_recognized_count / gold_neutral_citation_count if gold_neutral_citation_count else 0.0
 
     report = {
         "dataset": "auslawbench/AusLaw-Citation-Benchmark",
@@ -114,9 +111,7 @@ def evaluate_rows(
         "gold_neutral_citation_count": gold_neutral_citation_count,
         "extractor_recognized_count": extractor_recognized_count,
         "extractor_recognition_rate": recognition_rate,
-        "missing_court_codes": [
-            {"court": court, "count": count} for court, count in missing_courts.most_common()
-        ],
+        "missing_court_codes": [{"court": court, "count": count} for court, count in missing_courts.most_common()],
         "missed_examples": missed_examples,
     }
     if adapter is not None:

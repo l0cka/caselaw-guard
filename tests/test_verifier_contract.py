@@ -34,10 +34,7 @@ class RecordingAdapter(CitationAdapter):
 
 def test_verify_text_returns_stable_contract_and_fails_closed_for_unresolved_citations():
     adapter = RecordingAdapter()
-    document = (
-        "Obergefell v. Hodges, 576 U.S. 644, is real. "
-        "Imaginary v. Fictional, 999 U.S. 999, is not."
-    )
+    document = "Obergefell v. Hodges, 576 U.S. 644, is real. Imaginary v. Fictional, 999 U.S. 999, is not."
 
     report = verify_text(document, adapters=[adapter])
 

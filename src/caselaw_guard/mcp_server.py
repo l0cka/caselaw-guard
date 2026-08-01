@@ -28,7 +28,7 @@ def _verification_report_payload(
 
 def create_mcp_server(*, adapters: Sequence[CitationAdapter] | None = None):
     try:
-        from mcp.server.fastmcp import FastMCP
+        from mcp.server.fastmcp import FastMCP  # type: ignore[import-not-found]
     except ModuleNotFoundError as error:
         if error.name == "mcp":
             raise _missing_mcp_extra_error() from error
@@ -61,9 +61,7 @@ def main() -> None:
 
 
 def _missing_mcp_extra_error() -> RuntimeError:
-    return RuntimeError(
-        "MCP support is not installed. Install it with: python3 -m pip install 'caselaw-guard[mcp]'"
-    )
+    return RuntimeError("MCP support is not installed. Install it with: python3 -m pip install 'caselaw-guard[mcp]'")
 
 
 if __name__ == "__main__":

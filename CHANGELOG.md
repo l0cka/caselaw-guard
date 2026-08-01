@@ -4,6 +4,17 @@ All notable changes to CaseLaw Guard will be documented in this file.
 
 ## Unreleased
 
+- Consolidated OpenBench's Australian citation lookup, index builder and data
+  provenance into CaseLaw Guard.
+- Added parenthesised, bare-year, lower-case, pinpoint and alphanumeric-court
+  Australian neutral citation handling.
+- Added the canonical typed Australian index format, legacy flat-index loading
+  and an explicit migration command.
+- Added Australian index metadata, statistics and citation lookup routes to the
+  CaseLaw Guard API.
+- Preserved `caselaw-guard au-index build`, `--au-index` and
+  `CASELAW_GUARD_AU_INDEX` without adding an `openbench` package dependency.
+
 ## 0.1.2
 
 - Simplified README install and quickstart guidance.

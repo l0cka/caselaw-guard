@@ -70,6 +70,32 @@ def _compress(index_path: Path, compressed_path: Path) -> None:
     compressed_path.write_bytes(zstd.ZstdCompressor(level=19).compress(index_path.read_bytes()))
 
 
+def _run_coverage_gate(index_path: Path, baseline_path: Path, report_path: Path) -> None:
+    from scripts.eval_auslaw_benchmark import (
+        add_generation_timestamp,
+        compare_reports,
+        evaluate_rows,
+        load_report,
+        load_rows,
+        resolve_input_path,
+    )
+
+    benchmark_path = resolve_input_path(None, refresh=True)
+    report = evaluate_rows(load_rows(benchmark_path), au_index=index_path)
+    regressions = compare_reports(load_report(baseline_path), report)
+    report["baseline_comparison"] = {
+        "regression_count": len(regressions),
+        "regressions": regressions,
+    }
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        json.dumps(add_generation_timestamp(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    if regressions:
+        raise ValueError(f"AusLaw coverage regression: {len(regressions)} baseline result(s) regressed")
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
@@ -83,7 +109,19 @@ def main(argv: Sequence[str] | None = None) -> None:
         type=Path,
         help="Local Open Australian Legal Corpus JSONL. Enables an offline release build.",
     )
+    parser.add_argument(
+        "--coverage-baseline",
+        type=Path,
+        help="Approved per-row AusLaw benchmark baseline; enables the release coverage gate.",
+    )
+    parser.add_argument(
+        "--verification-report",
+        type=Path,
+        help="Path for the coverage report; defaults beside --output when --coverage-baseline is supplied.",
+    )
     args = parser.parse_args(argv)
+    if args.verification_report is not None and args.coverage_baseline is None:
+        parser.error("--verification-report requires --coverage-baseline")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     if args.corpus is not None:
@@ -117,8 +155,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     _validate(args.output)
     compressed_path = args.output.with_suffix(args.output.suffix + ".zst")
     _compress(args.output, compressed_path)
+    verification_report: Path | None = None
+    if args.coverage_baseline is not None:
+        verification_report = args.verification_report or args.output.with_name(f"{args.output.stem}.verification.json")
+        _run_coverage_gate(args.output, args.coverage_baseline, verification_report)
     checksum_path = args.output.with_suffix(args.output.suffix + ".sha256")
-    _write_checksums([args.output, compressed_path], checksum_path)
+    checksum_paths = [args.output, compressed_path]
+    if verification_report is not None:
+        checksum_paths.append(verification_report)
+    _write_checksums(checksum_paths, checksum_path)
     print(f"wrote {args.output}, {compressed_path} and {checksum_path}")
 
 

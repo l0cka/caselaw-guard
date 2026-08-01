@@ -1,0 +1,76 @@
+[project]
+name = "openbench"
+version = "0.1.0"
+description = "Open Australian case-law citation lookup API"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "openbench contributors" }]
+keywords = ["law", "australia", "citation", "case-law", "api"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: FastAPI",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Sociology",
+]
+
+dependencies = [
+  "fastapi>=0.115",
+  "pydantic>=2.7",
+  "typer>=0.12",
+  "uvicorn>=0.30",
+  "jsonschema>=4.22",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "httpx>=0.27",
+  "mypy>=1.10",
+  "ruff>=0.5",
+  "twine>=5",
+]
+release = [
+  "huggingface-hub>=0.23",
+  "datasets>=2.20",
+  "zstandard>=0.22",
+]
+
+[project.scripts]
+openbench = "openbench.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/l0cka/openbench"
+Issues = "https://github.com/l0cka/openbench/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openbench"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "PL", "RUF"]
+ignore = ["PLR0913"]  # allow many args in fastapi handlers
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004"]  # magic numbers in tests are fine
+"src/openbench/cli.py" = ["B008"]  # typer uses function calls in argument defaults by design
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src/openbench"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"

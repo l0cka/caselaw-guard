@@ -28,13 +28,13 @@ def _verification_report_payload(
 
 def create_mcp_server(*, adapters: Sequence[CitationAdapter] | None = None):
     try:
-        from mcp.server.fastmcp import FastMCP  # type: ignore[import-not-found]
+        from mcp.server import MCPServer  # type: ignore[import-not-found]
     except ModuleNotFoundError as error:
         if error.name == "mcp":
             raise _missing_mcp_extra_error() from error
         raise
 
-    mcp = FastMCP(
+    mcp = MCPServer(
         "CaseLaw Guard",
         instructions=(
             "Verify case-law citation existence in supplied text. "
